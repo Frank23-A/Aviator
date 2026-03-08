@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Admin Panel</title>
+
+<style>
+
+body{
+background:#111;
+color:white;
+font-family:Arial;
+text-align:center;
+padding-top:100px;
+}
+
+#value{
+font-size:60px;
+color:red;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Admin Panel</h1>
+
+<p>Next Crash Multiplier</p>
+
+<div id="value">Loading...</div>
+
+<script>
+
+function update(){
+
+fetch("/admin_data")
+.then(res => res.json())
+.then(data =>{
+
+document.getElementById("value").innerText =
+data.next_crash + "x"
+
+})
+
+}
+
+setInterval(update,1000)
+
+update()
+
+</script>
+
+</body>
+</html>
