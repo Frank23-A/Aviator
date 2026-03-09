@@ -7,33 +7,39 @@
 <style>
 
 body{
+background: radial-gradient(circle at left, #33970c, #000);
 margin:0;
-background: radial-gradient(circle at left, #1c3b52, #000);
 color:white;
 font-family:Arial;
 overflow:hidden;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
 }
 
 #game{
+background: radial-gradient(circle at left, #1c3b52, #000);
 position:relative;
-width:100%;
-height:400px;
+width:600px;
+height:200px;
 overflow:hidden;
+border:2px solid white;
 }
 
 #plane{
 position:absolute;
-left:50px;
-top:320px;
+left:-2px;
+top:100px;
 font-size:40px;
 z-index:3;
 }
 
 #multiplier{
 position:absolute;
-right:60px;
-top:60px;
-font-size:60px;
+right:10px;
+top:10px;
+font-size:30px;
 font-weight:bold;
 color:white;
 }
@@ -42,6 +48,18 @@ canvas{
 position:absolute;
 top:0;
 left:0;
+z-index:1;
+}
+
+#loading{
+position:absolute;
+left:50%;
+top:50%;
+transform:translate(-50%, -50%);
+font-size:60px;
+color:white;
+z-index:5;
+display:none;
 }
 
 </style>
@@ -50,13 +68,10 @@ left:0;
 <body>
 
 <div id="game">
-
-<canvas id="trail"></canvas>
-
-<div id="plane">✈</div>
-
-<div id="multiplier">1.00x</div>
-
+    <img id="plane" src="/static/img/aviator.png" alt="Plane" style="width:80px; height:50px;">
+    <canvas id="trail"></canvas>
+    <div id="loading"></div>
+    <div id="multiplier">1.00x</div>
 </div>
 
 <script>
@@ -69,8 +84,8 @@ const plane = document.getElementById("plane")
 const canvas = document.getElementById("trail")
 const ctx = canvas.getContext("2d")
 
-canvas.width = window.innerWidth
-canvas.height = 400
+canvas.width = 600
+canvas.height = 200
 
 let points = []
 
@@ -84,10 +99,14 @@ crashPoint = data.crash
 
 multiplier = 1
 
+document.getElementById("loading").style.display="none"
+
+document.getElementById("multiplier").style.display="block"
+
 plane.style.display="block"
 
-plane.style.left="50px"
-plane.style.top="320px"
+plane.style.left="0px"
+plane.style.top="150px"
 
 points=[]
 
@@ -104,13 +123,27 @@ multiplier += 0.03
 document.getElementById("multiplier").innerText =
 multiplier.toFixed(2)+"x"
 
-let x = 50 + multiplier*40
-let y = 320 - multiplier*12
+let x = -2 + multiplier*40
+let progress = (multiplier - 2) / 3
+let upward = 50 * (1 / (1 + Math.exp(-progress)))
+let y = 150 - upward
+
+if(x > 520){
+x = 520
+}
+
+if(y < 0){
+y = 0
+}
+
+if(y > 150){
+y = 150
+}
 
 plane.style.left = x+"px"
 plane.style.top = y+"px"
 
-points.push({x:x+20,y:y+20})
+points.push({x:x+20,y:y+50})
 
 drawTrail()
 
@@ -120,7 +153,31 @@ clearInterval(interval)
 
 plane.style.display="none"
 
-setTimeout(startRound,2000)
+document.getElementById("multiplier").style.display="none"
+
+let loading = document.getElementById("loading")
+
+loading.style.display="block"
+
+loading.innerText = "5"
+
+let countdown = 5
+
+let countdownInterval = setInterval(() => {
+
+countdown--
+
+loading.innerText = countdown
+
+if(countdown <= 0){
+
+clearInterval(countdownInterval)
+
+startRound()
+
+}
+
+}, 1000)
 
 }
 
@@ -130,19 +187,21 @@ function drawTrail(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
+for(let i = 0; i < points.length; i++){
+
+let p = points[i]
+
+let alpha = (i / points.length) * 0.8 + 0.2
+
 ctx.beginPath()
 
-ctx.moveTo(points[0]?.x || 0, points[0]?.y || 0)
+ctx.arc(p.x, p.y, 2, 0, 2 * Math.PI)
 
-for(let p of points){
+ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`
 
-ctx.lineTo(p.x,p.y)
+ctx.fill()
 
 }
-
-ctx.strokeStyle="red"
-ctx.lineWidth=4
-ctx.stroke()
 
 }
 

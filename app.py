@@ -9,8 +9,8 @@ next_crash = 1.0
 def generate_crash():
     r = random.random()
     crash = round(1/(1-r),2)
-    if crash > 20:
-        crash = 20
+    if crash > 100:
+        crash = 100
     return crash
 
 # create first crash value
