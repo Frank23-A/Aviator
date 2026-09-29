@@ -187,8 +187,8 @@ ctx.lineTo(lastPoint.x, canvas.height)
 ctx.closePath()
 
 let fill = ctx.createLinearGradient(0, 0, 0, canvas.height)
-fill.addColorStop(0, "rgba(103, 228, 54, 0.45)")
-fill.addColorStop(1, "rgba(121, 28, 48, 0.85)")
+fill.addColorStop(0, "rgba(228, 95, 54, 0.45)")
+fill.addColorStop(1, "rgba(182, 109, 75, 0.85)")
 ctx.fillStyle = fill
 ctx.fill()
 
@@ -211,13 +211,13 @@ ctx.lineTo(p.x, p.y)
 ctx.lineWidth = 4
 ctx.lineCap = "round"
 ctx.lineJoin = "round"
-ctx.strokeStyle = "rgba(238, 19, 37, 0.8)"
-ctx.shadowColor = "rgba(236, 17, 36, 0.79)"
+ctx.strokeStyle = "rgba(201, 133, 94, 0.8)"
+ctx.shadowColor = "rgba(218, 129, 88, 0.79)"
 ctx.shadowBlur = 12
 ctx.stroke()
 
-ctx.lineWidth = 5
-ctx.strokeStyle = "#e23960"
+ctx.lineWidth = 1
+ctx.strokeStyle = "#d3816c"
 ctx.shadowBlur = 0
 ctx.stroke()
 
