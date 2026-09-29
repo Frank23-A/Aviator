@@ -3,211 +3,33 @@
 
 <head>
 <title>Aviator Simulation</title>
-
-<style>
-
-body{
-background: radial-gradient(circle at left, #33970c, #000);
-margin:0;
-color:white;
-font-family:Arial;
-overflow:hidden;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-}
-
-#game{
-background: radial-gradient(circle at left, #1c3b52, #000);
-position:relative;
-width:600px;
-height:200px;
-overflow:hidden;
-border:2px solid white;
-}
-
-#plane{
-position:absolute;
-left:-2px;
-top:100px;
-font-size:40px;
-z-index:3;
-}
-
-#multiplier{
-position:absolute;
-right:10px;
-top:10px;
-font-size:30px;
-font-weight:bold;
-color:white;
-}
-
-canvas{
-position:absolute;
-top:0;
-left:0;
-z-index:1;
-}
-
-#loading{
-position:absolute;
-left:50%;
-top:50%;
-transform:translate(-50%, -50%);
-font-size:60px;
-color:white;
-z-index:5;
-display:none;
-}
-
-</style>
+<link rel="stylesheet" href="../static/style.css">
 </head>
 
 <body>
-
-<div id="game">
-    <img id="plane" src="/static/img/aviator.png" alt="Plane" style="width:80px; height:50px;">
+<div>
+    <h1>Tob bar</h1>
+</div>
+<div class="game-screen" id="game">
+    <div class="rays">
+        <div class="ray"></div>
+        <div class="ray"></div>
+        <div class="ray"></div>
+        <div class="ray"></div>
+        <div class="ray"></div>
+        <div class="ray"></div>
+        <div class="ray"></div>
+        <div class="ray"></div>
+        <div class="ray"></div>
+        <div class="ray"></div>
+        <div class="ray"></div>
+    </div>
+    <img id="plane" src="../static/img/aviator.png" alt="Plane">
     <canvas id="trail"></canvas>
     <div id="loading"></div>
     <div id="multiplier">1.00x</div>
 </div>
 
-<script>
-
-let multiplier = 1
-let crashPoint = 0
-let interval
-
-const plane = document.getElementById("plane")
-const canvas = document.getElementById("trail")
-const ctx = canvas.getContext("2d")
-
-canvas.width = 600
-canvas.height = 200
-
-let points = []
-
-function startRound(){
-
-fetch("/crash")
-.then(res => res.json())
-.then(data =>{
-
-crashPoint = data.crash
-
-multiplier = 1
-
-document.getElementById("loading").style.display="none"
-
-document.getElementById("multiplier").style.display="block"
-
-plane.style.display="block"
-
-plane.style.left="0px"
-plane.style.top="150px"
-
-points=[]
-
-interval=setInterval(updateGame,40)
-
-})
-
-}
-
-function updateGame(){
-
-multiplier += 0.03
-
-document.getElementById("multiplier").innerText =
-multiplier.toFixed(2)+"x"
-
-let x = -2 + multiplier*40
-let progress = (multiplier - 2) / 3
-let upward = 50 * (1 / (1 + Math.exp(-progress)))
-let y = 150 - upward
-
-if(x > 520){
-x = 520
-}
-
-if(y < 0){
-y = 0
-}
-
-if(y > 150){
-y = 150
-}
-
-plane.style.left = x+"px"
-plane.style.top = y+"px"
-
-points.push({x:x+20,y:y+50})
-
-drawTrail()
-
-if(multiplier >= crashPoint){
-
-clearInterval(interval)
-
-plane.style.display="none"
-
-document.getElementById("multiplier").style.display="none"
-
-let loading = document.getElementById("loading")
-
-loading.style.display="block"
-
-loading.innerText = "5"
-
-let countdown = 5
-
-let countdownInterval = setInterval(() => {
-
-countdown--
-
-loading.innerText = countdown
-
-if(countdown <= 0){
-
-clearInterval(countdownInterval)
-
-startRound()
-
-}
-
-}, 1000)
-
-}
-
-}
-
-function drawTrail(){
-
-ctx.clearRect(0,0,canvas.width,canvas.height)
-
-for(let i = 0; i < points.length; i++){
-
-let p = points[i]
-
-let alpha = (i / points.length) * 0.8 + 0.2
-
-ctx.beginPath()
-
-ctx.arc(p.x, p.y, 2, 0, 2 * Math.PI)
-
-ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`
-
-ctx.fill()
-
-}
-
-}
-
-startRound()
-
-</script>
-
+<script src="../static/aviator.js"></script>
 </body>
 </html>

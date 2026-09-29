@@ -1,0 +1,100 @@
+body{
+background: radial-gradient(circle at left, #333629, #0f0a0a4f);
+margin:0;
+color:white;
+font-family:Arial;
+overflow:hidden;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.game-screen{
+background: radial-gradient(ellipse at 25% 100%, #2f62cf 0%, #303061 48%, #182531 100%);
+position:relative;
+width:600px;
+height:200px;
+overflow:hidden;
+border:2px solid rgb(62, 63, 51);
+}
+
+.rays {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.rays::before {
+    content: "";
+    position: absolute;
+    left: -760px;
+    bottom: -760px;
+    width: 1520px;
+    height: 1520px;
+    border-radius: 50%;
+    background:
+        repeating-conic-gradient(
+            from -10deg,
+            rgba(71, 231, 191, 0.34) 0deg 6deg,
+            transparent 6deg 11deg
+        );
+    transform-origin: center center;
+    animation: spinRays 24s linear infinite;
+    filter: blur(0.4px);
+    opacity: 0.85;
+}
+
+.ray {
+    display: none;
+}
+
+@keyframes spinRays {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#plane{
+position:absolute;
+left:-5px;
+top:119px;
+width:86px;
+height:41px;
+z-index:5;
+object-fit:contain;
+}
+
+#multiplier{
+position:absolute;
+left:50%;
+top:50%;
+transform:translate(-50%, -50%);
+font-size:62px;
+font-weight:900;
+color:white;
+z-index:4;
+}
+
+canvas{
+position:absolute;
+top:0;
+left:0;
+z-index:1;
+}
+
+#loading{
+position:absolute;
+left:50%;
+top:50%;
+transform:translate(-50%, -50%);
+font-size:60px;
+color:rgb(218, 20, 20);
+z-index:6;
+display:none;
+}

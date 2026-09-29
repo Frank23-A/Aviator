@@ -6,11 +6,14 @@ app = Flask(__name__)
 # store next crash value
 next_crash = 1.0
 
+
 def generate_crash():
     r = random.random()
     crash = round(1/(1-r),2)
     if crash > 100:
         crash = 100
+    if crash < 2:
+        crash = round(random.uniform(2, 4), 2)
     return crash
 
 # create first crash value
