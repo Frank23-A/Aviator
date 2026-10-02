@@ -3,6 +3,7 @@
 
 <head>
 <title>Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 
@@ -17,6 +18,16 @@ padding-top:100px;
 #value{
 font-size:60px;
 color:red;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 24px 16px 0;
+    }
+
+    #value {
+        font-size: clamp(36px, 14vw, 60px);
+    }
 }
 
 </style>

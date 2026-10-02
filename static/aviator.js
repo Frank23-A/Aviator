@@ -7,24 +7,100 @@ let countdownTimer = null
 const plane = document.getElementById("plane")
 const canvas = document.getElementById("trail")
 const ctx = canvas.getContext("2d")
+const gameScreen = document.getElementById("game")
 
 const loading = document.getElementById("loading")
 const multiplierDisplay = document.getElementById("multiplier")
 const rays = document.querySelector(".rays")
 
-const planeWidth = 86
-const planeHeight = 41
-
-const planeTailX = 3
-const planeTailY = 35
-
-const trailAttachX = planeTailX + 5
-const trailAttachY = planeTailY
-
-canvas.width = 740
-canvas.height = 180
+// Attach at the visible lower rear fuselage, below the wing and clear of transparent padding.
+const planeTailXRatio = 0.15
+const planeTailYRatio = 0.89
 
 let points = []
+let currentDanceAngle = 8
+let currentDanceBlend = 0
+
+function setRaysActive(active){
+    if(!rays){
+        return
+    }
+
+    rays.classList.toggle("rays-active", active)
+}
+
+function setLoadingVisible(visible){
+    loading.style.display = visible ? "block" : "none"
+}
+
+function getPlaneAnchor(){
+    const width = plane.offsetWidth || 86
+    const height = plane.offsetHeight || width * 0.63
+
+    return {
+        x: width * planeTailXRatio,
+        y: height * planeTailYRatio,
+        width,
+        height,
+    }
+}
+
+function placePlaneAtTrailAnchor(anchorX, anchorY){
+    const anchor = getPlaneAnchor()
+    plane.style.left = `${anchorX - anchor.x}px`
+    plane.style.top = `${anchorY - anchor.y}px`
+}
+
+function resizeGameCanvas(){
+    const bounds = gameScreen.getBoundingClientRect()
+    const width = Math.max(1, Math.round(bounds.width))
+    const height = Math.max(1, Math.round(bounds.height))
+
+    if(canvas.width === width && canvas.height === height){
+        return
+    }
+
+    canvas.width = width
+    canvas.height = height
+    points = []
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    if(loading.style.display === "none"){
+        placePlaneAtTrailAnchor(0, canvas.height)
+    }
+}
+
+resizeGameCanvas()
+window.addEventListener("resize", resizeGameCanvas)
+
+if("ResizeObserver" in window){
+    new ResizeObserver(resizeGameCanvas).observe(gameScreen)
+}
+
+document.querySelectorAll(".bottom-card").forEach(card => {
+    let stake = 1
+    const stakeDisplay = card.querySelector(".stake-value")
+    const betValue = card.querySelector(".bet-value")
+
+    function renderStake(){
+        stakeDisplay.textContent = stake.toFixed(2)
+        betValue.textContent = `${stake.toFixed(2)} USD`
+    }
+
+    card.querySelectorAll("[data-adjust]").forEach(button => {
+        button.addEventListener("click", () => {
+            stake = Math.max(1, stake + Number(button.dataset.adjust))
+            renderStake()
+        })
+    })
+
+    card.querySelectorAll("[data-stake]").forEach(button => {
+        button.addEventListener("click", () => {
+            stake = Number(button.dataset.stake)
+            renderStake()
+        })
+    })
+})
 
 
 /* =========================================
@@ -220,68 +296,20 @@ function startFlight(crash){
     flightTick = 0
 
 
-    /* Hide countdown */
+    setLoadingVisible(false)
 
-    loading.style.display =
-        "none"
+    multiplierDisplay.style.display = "block"
+    multiplierDisplay.innerText = "1.00x"
 
+    plane.style.display = "block"
+    canvas.style.display = "block"
 
-    /* Show multiplier */
-
-    multiplierDisplay.style.display =
-        "block"
-
-
-    multiplierDisplay.innerText =
-        "1.00x"
-
-
-    /* Show plane and canvas */
-
-    plane.style.display =
-        "block"
-
-    canvas.style.display =
-        "block"
-
-
-    /* Put plane at bottom-left */
-
-    plane.style.left =
-        -planeTailX + "px"
-
-    plane.style.top =
-        (
-            canvas.height -
-            planeTailY
-        ) + "px"
-
-
-    /* Clear old trail */
+    placePlaneAtTrailAnchor(0, canvas.height)
 
     points = []
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    )
-
-
-    /*
-        START RAYS AT THE SAME TIME
-        THE PLANE STARTS
-    */
-
-    if(rays){
-
-        rays.classList.add(
-            "rays-active"
-        )
-
-    }
+    setRaysActive(true)
 
 
     /* Start flight */
@@ -314,17 +342,10 @@ function updateGame(){
         flightTick / 36
 
 
-    let maxPlaneX =
-        canvas.width -
-        planeWidth
-
-
-    let maxPlaneY = 0
-
-
-    let startY =
-        canvas.height -
-        planeTailY
+    const planeAnchor = getPlaneAnchor()
+    const maxAnchorX = canvas.width - planeAnchor.width + planeAnchor.x
+    const minAnchorY = planeAnchor.y
+    const maxAnchorY = canvas.height
 
 
     let climbProgress =
@@ -348,13 +369,7 @@ function updateGame(){
        PLANE X MOVEMENT
     ================================= */
 
-    let x =
-        -planeTailX +
-        (
-            maxPlaneX +
-            planeTailX
-        ) *
-        flightProgress
+    let x = maxAnchorX * flightProgress
 
 
     /* ================================
@@ -362,116 +377,69 @@ function updateGame(){
     ================================= */
 
     let upward =
-        (
-            startY -
-            maxPlaneY
-        ) *
-        Math.pow(
-            flightProgress,
-            1.8
-        )
+        (maxAnchorY - minAnchorY) *
+        Math.pow(flightProgress, 1.8)
 
 
-    /* ================================
-       EARLY PLANE MOVEMENT
+    /* =================================
+       SMOOTH REPEATING PLANE DANCE
     ================================= */
 
-    let wave =
-        Math.sin(
-            flightTime * 1.4
-        ) *
-        Math.min(
-            4,
-            climbProgress * 2
-        ) *
-        (
-            1 -
-            flightProgress
-        )
+    const danceStartProgress = 0.05
+    const danceStartTime = 0.35 - Math.log(1 - danceStartProgress) / 0.18
+    const danceTime = Math.max(0, flightTime - danceStartTime)
+    const maxAngle = 30
+    const minAngle = 0
+    const angleCycle = 6000
 
+    const angleProgress = (Math.sin((2 * Math.PI * danceTime) / angleCycle - Math.PI / 2) + 1) / 2
+    const currentAngle = minAngle + (maxAngle - minAngle) * angleProgress
 
-    /* ================================
-       HOVER MOVEMENT
-    ================================= */
+    const angleRadians = currentAngle * Math.PI / 180
+    const angleRange = maxAnchorX * Math.tan(angleRadians)
 
-    let hoverProgress =
-        Math.min(
-            1,
-            Math.max(
-                0,
-                (
-                    flightProgress -
-                    0.82
-                ) / 0.18
-            )
-        )
+    const danceAmplitude = Math.min(35, angleRange * 0.035)
+    const danceBlendProgress = Math.min(1, danceTime / 2.5)
+    const smoothDanceBlend = danceBlendProgress * danceBlendProgress * (3 - 2 * danceBlendProgress)
 
+    currentDanceAngle = currentAngle
+    currentDanceBlend = smoothDanceBlend
 
-    let hoverEase =
-        hoverProgress *
-        hoverProgress *
-        (
-            3 -
-            2 * hoverProgress
-        )
-
-
-    let hoverTime =
-        Math.max(
-            0,
-            flightTime - 9.8
-        )
-
-
-    let hoverDance =
-        Math.sin(
-            hoverTime * 0.42
-        ) *
-        3 *
-        hoverEase
-
+    const danceWave = angleProgress * danceAmplitude * smoothDanceBlend
 
     /* ================================
        FINAL PLANE POSITION
     ================================= */
 
-    let y =
-        (
-            canvas.height -
-            planeTailY
-        ) -
-        upward +
-        wave +
-        hoverDance
+    const flightPathY = maxAnchorY - upward
+    const danceOffset = flightProgress >= danceStartProgress ? danceWave : 0
+    const y = flightPathY + danceOffset
 
 
     /* ================================
        KEEP PLANE INSIDE GAME
     ================================= */
 
-    if(x > maxPlaneX){
+    if(x > maxAnchorX){
 
-        x = maxPlaneX
+        x = maxAnchorX
 
     }
 
 
-    if(y < 0){
+    if(y < minAnchorY){
 
-        y = 0
+        y = minAnchorY
 
     }
 
 
     if(
-        y >
-        canvas.height -
-        planeTailY
+        y > maxAnchorY
     ){
 
         y =
-            canvas.height -
-            planeTailY
+            maxAnchorY
 
     }
 
@@ -480,28 +448,21 @@ function updateGame(){
        APPLY PLANE POSITION
     ================================= */
 
-    plane.style.left =
-        x + "px"
+    placePlaneAtTrailAnchor(x, y)
 
-    plane.style.top =
-        y + "px"
+    if(flightProgress >= danceStartProgress) {
+        plane.style.transform = "rotate(${-currentAngle}deg)"
+    }
+    else {
+        plane.style.transform = "rotate(0deg)"
+    }
 
 
     /* ================================
        CREATE TRAIL
     ================================= */
 
-    let trailPoint = {
-
-        x:
-            x +
-            trailAttachX,
-
-        y:
-            y +
-            trailAttachY
-
-    }
+    const trailPoint = { x, y }
 
 
     if(
@@ -542,82 +503,19 @@ function updateGame(){
         interval = null
 
 
-        /* =================================
-           ADD ROUND TO HISTORY
-        ================================= */
+        addRoundHistory(crashPoint)
+        setRaysActive(false)
 
-        addRoundHistory(
-            crashPoint
-        )
+        plane.style.display = "block"
+        canvas.style.display = "block"
 
-
-        /* =================================
-           STOP RAYS
-        ================================= */
-
-        if(rays){
-
-            rays.classList.remove(
-                "rays-active"
-            )
-
-        }
-
-
-        /* =================================
-           KEEP PLANE VISIBLE
-        ================================= */
-
-        plane.style.display =
-            "block"
-
-        canvas.style.display =
-            "block"
-
-
-        /* =================================
-           RETURN PLANE TO BOTTOM-LEFT
-        ================================= */
-
-        plane.style.left =
-            -planeTailX + "px"
-
-        plane.style.top =
-            (
-                canvas.height -
-                planeTailY
-            ) + "px"
-
-
-        /* =================================
-           CLEAR TRAIL
-        ================================= */
+        placePlaneAtTrailAnchor(0, canvas.height)
 
         points = []
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-
-        ctx.clearRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        )
-
-
-        /* =================================
-           HIDE MULTIPLIER
-        ================================= */
-
-        multiplierDisplay.style.display =
-            "none"
-
-
-        /* =================================
-           SHOW COUNTDOWN
-        ================================= */
-
-        loading.style.display =
-            "block"
+        multiplierDisplay.style.display = "none"
+        setLoadingVisible(true)
 
 
         /* =================================
@@ -647,21 +545,11 @@ function updateGame(){
             "countdownProgress 5s linear forwards"
 
 
-        /* =================================
-           START NEW ROUND AFTER 5 SECONDS
-        ================================= */
-
-        countdownTimer =
-            setTimeout(() => {
-
-                loading.style.display =
-                    "none"
-
-                countdownTimer = null
-
-                startRound()
-
-            }, 5000)
+        countdownTimer = setTimeout(() => {
+            setLoadingVisible(false)
+            countdownTimer = null
+            startRound()
+        }, 5000)
 
     }
 
@@ -701,39 +589,28 @@ function drawTrail(){
     )
 
 
-    for(
-        let i = 0;
-        i < points.length;
-        i++
-    ){
+    for(let i = 0; i < points.length; i++){
+        const p = points[i]
+        const next = points[i + 1]
 
-        let p =
-            points[i]
-
-        let next =
-            points[i + 1]
-
+        const progress = points.length <= 1 ? 1 : i / (points.length - 1)
+        const angle = currentDanceAngle * Math.PI / 180
+        const angleOffset = Math.tan(angle) * (1 - progress) * 28 * currentDanceBlend
+        const tailY = p.y - angleOffset
 
         if(next){
+            const nextOffset = Math.tan(angle) * (1 - progress) * 28 * currentDanceBlend
+            const nextY = next.y - nextOffset
 
             ctx.quadraticCurveTo(
                 p.x,
-                p.y,
+                tailY,
                 (p.x + next.x) / 2,
-                (p.y + next.y) / 2
+                (tailY + nextY) / 2
             )
-
+        } else {
+            ctx.lineTo(p.x, tailY)
         }
-
-        else{
-
-            ctx.lineTo(
-                p.x,
-                p.y
-            )
-
-        }
-
     }
 
 
@@ -763,13 +640,13 @@ function drawTrail(){
 
     fill.addColorStop(
         0,
-        "rgba(228, 95, 54, 0.45)"
+        "rgba(255, 18, 58, 0.32)"
     )
 
 
     fill.addColorStop(
         1,
-        "rgba(182, 109, 75, 0.85)"
+        "rgba(190, 0, 34, 0.78)"
     )
 
 
@@ -836,10 +713,10 @@ function drawTrail(){
         "round"
 
     ctx.strokeStyle =
-        "rgba(201, 133, 94, 0.8)"
+        "rgba(255, 12, 52, 0.95)"
 
     ctx.shadowColor =
-        "rgba(218, 129, 88, 0.79)"
+        "rgba(255, 0, 48, 0.85)"
 
     ctx.shadowBlur = 12
 
@@ -853,7 +730,7 @@ function drawTrail(){
     ctx.lineWidth = 1
 
     ctx.strokeStyle =
-        "#d3816c"
+        "#ff4967"
 
     ctx.shadowBlur = 0
 

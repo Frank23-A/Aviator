@@ -2,111 +2,129 @@
 <html>
 
 <head>
-<title>Aviator Simulation</title>
-<link rel="stylesheet" href="../static/style.css">
+<title>Aviator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='rays-only-during-flight') }}">
 </head>
 
 <body>
 <header class="top-bar">
-
-    <!-- AVIATOR LOGO -->
-    <div class="top-logo">
-        <span class="aviator-icon">Aviator</span>
-    </div>
-
-    <!-- BALANCE -->
-    <div class="balance-box">
-        <span class="balance-label">Balance</span>
-        <span class="balance-value" id="balance">0.00</span>
-    </div>
-
-    <!-- TOP ACTIONS -->
-    <div class="top-actions">
-
-        <button class="top-button" id="historyButton">
-            <span>R</span>
-            <small>History</small>
-        </button>
-
-        <button class="top-button" id="soundButton">
-            <span>S</span>
-            <small>Sound</small>
-        </button>
-
-        <button class="top-button" id="menuButton">
-            <span>M</span>
-            <small>Menu</small>
-        </button>
-
-    </div>
-
+    <div class="top-logo"><span class="aviator-icon">Aviator</span></div>
+    <div class="top-bar-spacer"></div>
+    <div class="header-balance"><strong id="headerBalance">{{ '{:,.2f}'.format(user.balance) }}</strong><span>USD</span></div>
+    <button class="menu-icon" id="menuButton" type="button" aria-label="Open menu">☰</button>
+    <button class="logout-button" id="logoutButton" type="button">Logout</button>
 </header>
 
-<div class="round-history">
+<main class="dashboard-layout">
+    <aside class="live-bets-panel">
+        <div class="bets-tabs" role="tablist" aria-label="Bet list filters">
+            <button class="bets-tab active" type="button">All Bets</button>
+            <button class="bets-tab" type="button">Previous</button>
+            <button class="bets-tab" type="button">Top</button>
+        </div>
+        <div class="bets-summary">
+            <div class="avatar-stack" aria-hidden="true"><span>🟢</span><span>🔵</span><span>🟣</span></div>
+            <div class="bets-summary-total"><strong id="totalWin">3,903.00</strong><span>Total win USD</span></div>
+            <div class="bets-progress-label"><span>185/334 Bets</span><span>55%</span></div>
+            <div class="bets-progress"><span></span></div>
+        </div>
+        <div class="bets-table-head"><span>Player</span><span>Bet USD</span><span>X</span><span>Win USD</span></div>
+        <div class="bets-list" id="liveBetsList">
+            <div class="bet-row"><span class="player-name"><i>🎲</i>d***1</span><span>100.00</span><span></span><span></span></div>
+            <div class="bet-row"><span class="player-name"><i>🎲</i>d***1</span><span>100.00</span><span></span><span></span></div>
+            <div class="bet-row winner"><span class="player-name"><i>🟣</i>d***0</span><span>100.00</span><span class="multiplier-value">2.41x</span><span>241.00</span></div>
+            <div class="bet-row winner"><span class="player-name"><i>⚫</i>d***9</span><span>100.00</span><span class="multiplier-value">4.16x</span><span>416.00</span></div>
+            <div class="bet-row"><span class="player-name"><i>⚫</i>d***9</span><span>100.00</span><span></span><span></span></div>
+            <div class="bet-row winner"><span class="player-name"><i>🔵</i>d***3</span><span>100.00</span><span class="multiplier-value">1.95x</span><span>195.00</span></div>
+            <div class="bet-row winner"><span class="player-name"><i>🔵</i>d***3</span><span>100.00</span><span class="multiplier-value">2.12x</span><span>212.00</span></div>
+            <div class="bet-row winner"><span class="player-name"><i>🟤</i>d***0</span><span>100.00</span><span class="multiplier-value">3.14x</span><span>314.00</span></div>
+            <div class="bet-row"><span class="player-name"><i>⚪</i>d***6</span><span>100.00</span><span></span><span></span></div>
+            <div class="bet-row"><span class="player-name"><i>⚪</i>d***6</span><span>100.00</span><span></span><span></span></div>
+        </div>
+        <div class="bets-footer"><span>◈ &nbsp;Provably Fair Game</span><span>Powered by <b>SPRIBE</b></span></div>
+    </aside>
 
-    <div class="history-header">
-        Round history
-    </div>
+    <section class="dashboard-main" aria-label="Aviator game">
+        <div class="round-history">
+            <div id="historyList" class="history-list" aria-live="polite"></div>
+            <button class="history-more" type="button" aria-label="More history">•••</button>
+        </div>
 
-    <div id="historyList" class="history-list">
-        <!-- Round results appear here -->
-    </div>
+        <div class="game-screen" id="game">
+            <div class="live-mode">LIVE MODE</div>
+            <div class="rays">
+                <div class="ray"></div>
+                <div class="ray"></div>
+                <div class="ray"></div>
+                <div class="ray"></div>
+                <div class="ray"></div>
+                <div class="ray"></div>
+                <div class="ray"></div>
+                <div class="ray"></div>
+                <div class="ray"></div>
+                <div class="ray"></div>
+                <div class="ray"></div>
+            </div>
+            <img id="plane" src="../static/img/aviator.png" alt="Plane">
+            <canvas id="trail"></canvas>
+            <div id="loading" aria-live="polite">
+                <div class="countdown-partner">
+                    <div class="partner-top">
+                        <img class="partner-brand-logo" src="{{ url_for('static', filename='img/utfv.png') }}" alt="UFC">
+                        <span class="partner-logo-divider" aria-hidden="true"></span>
+                        <img class="partner-flight-logo" src="{{ url_for('static', filename='img/aviator.png') }}" alt="" aria-hidden="true">
+                    </div>
+                    <span class="partner-label">OFFICIAL PARTNERS</span>
+                </div>
+                <div class="countdown-line">
+                    <div class="countdown-progress"></div>
+                </div>
+                <div class="partner-bottom">
+                    <div class="partner-logo"><span class="partner-logo-mark">S</span><span class="partner-logo-text">SPRIBE</span></div>
+                    <div class="partner-badge">
+                        <span>Official Game</span>
+                        <span class="partner-check">✓</span>
+                    </div>
+                    <div class="partner-year">Since 2019</div>
+                </div>
+            </div>
+            <div id="multiplier">1.00x</div>
+        </div>
 
-</div>
+        <div class="bottom-cards">
+            <section class="bottom-card" aria-label="First bet control">
+                <div class="bet-adjuster">
+                    <div class="stake-control"><button type="button" data-adjust="-1" aria-label="Decrease bet">−</button><strong class="stake-value">1.00</strong><button type="button" data-adjust="1" aria-label="Increase bet">+</button></div>
+                    <div class="quick-stakes"><button type="button" data-stake="1">1</button><button type="button" data-stake="2">2</button><button type="button" data-stake="5">5</button><button type="button" data-stake="10">10</button></div>
+                </div>
+                <button class="green-button" id="cardButton1" type="button"><span class="bet-label">Bet</span><span class="bet-value">1.00 USD</span></button>
+            </section>
+            <section class="bottom-card" aria-label="Second bet control">
+                <div class="bet-adjuster">
+                    <div class="stake-control"><button type="button" data-adjust="-1" aria-label="Decrease bet">−</button><strong class="stake-value">1.00</strong><button type="button" data-adjust="1" aria-label="Increase bet">+</button></div>
+                    <div class="quick-stakes"><button type="button" data-stake="1">1</button><button type="button" data-stake="2">2</button><button type="button" data-stake="5">5</button><button type="button" data-stake="10">10</button></div>
+                </div>
+                <button class="green-button" id="cardButton2" type="button"><span class="bet-label">Bet</span><span class="bet-value">1.00 USD</span></button>
+            </section>
+        </div>
+    </section>
+</main>
 
-<div class="game-screen" id="game">
-    <div class="live-mode">
-        <span class="live-dot"></span>
-        LIVE MODE
-    </div>
-    <div class="rays">
-        <div class="ray"></div>
-        <div class="ray"></div>
-        <div class="ray"></div>
-        <div class="ray"></div>
-        <div class="ray"></div>
-        <div class="ray"></div>
-        <div class="ray"></div>
-        <div class="ray"></div>
-        <div class="ray"></div>
-        <div class="ray"></div>
-        <div class="ray"></div>
-    </div>
-    <img id="plane" src="../static/img/aviator.png" alt="Plane">
-    <canvas id="trail"></canvas>
-    <div id="loading">
-    <div class="countdown-line">
-        <div class="countdown-progress"></div>
-    </div>
-</div>
-    <div id="multiplier">1.00x</div>
-</div>
-
-<div class="bottom-cards">
-    <div class="bottom-card">
-        <button class="green-button" id="cardButton1">
-            <span class="bet-label">Bet</span>
-            <span class="bet-value" id="balance">Ksh 0.00</span>
-        </button>
-    </div>
-    <div class="bottom-card">
-        <button class="green-button" id="cardButton1">
-            <span class="bet-label">Bet</span>
-            <span class="bet-value" id="balance">Ksh 0.00</span>
-        </button>
-    </div>
-</div>
-
-<div class="side-card">
-
-    <!-- You can put anything here later -->
-
-</div>
-
-<div class="right-card">
-    <!-- Your content will go here -->
-</div>
-
-<script src="../static/aviator.js"></script>
+<script src="{{ url_for('static', filename='aviator.js', v='no-dance-transition-oscillation') }}"></script>
+<script>
+    document.getElementById('logoutButton').addEventListener('click', function () {
+        fetch('/logout', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        })
+        .then(() => {
+            window.location.href = '/login';
+        })
+        .catch(() => {
+            window.location.href = '/login';
+        });
+    });
+</script>
 </body>
 </html>
