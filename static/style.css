@@ -1,23 +1,465 @@
-body{
-background: radial-gradient(circle at left, #333629, #0f0a0a4f);
-margin:0;
-color:white;
-font-family:Arial;
-overflow:hidden;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
+/* =========================================
+   BODY / PAGE
+========================================= */
+
+body {
+    background: radial-gradient(circle at left, #333629, #0f0a0a4f);
+    margin: 0;
+    color: white;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+/* =========================================
+   TOP BAR
+========================================= */
+
+.top-bar {
+    width: 100%;
+    height: 46px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    gap: 15px;
+
+    padding: 0 18px;
+    box-sizing: border-box;
+
+    background: linear-gradient(
+        90deg,
+        #101c35,
+        #172b4d,
+        #101c35
+    );
+
+    border-bottom: 2px solid #2f62cf;
+
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+
+    color: white;
+
+    flex-shrink: 0;
 }
 
-.game-screen{
-background: radial-gradient(ellipse at 25% 100%, #2f62cf 0%, #303061 48%, #182531 100%);
-position:relative;
-width:600px;
-height:200px;
-overflow:hidden;
-border:2px solid rgb(62, 63, 51);
+
+/* =========================================
+   AVIATOR LOGO
+========================================= */
+
+.top-logo {
+    display: flex;
+    align-items: center;
+
+    white-space: nowrap;
 }
+
+.aviator-icon {
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: #ec1a1a;
+}
+
+
+/* =========================================
+   BALANCE
+========================================= */
+
+.balance-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    width: 85px;
+    min-width: 75px;
+    height: 38px;
+
+    padding: 0;
+
+    background: #222;
+    border-radius: 7px;
+
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+.balance-label {
+    font-size: 9px;
+    color: #999;
+}
+
+.balance-value {
+    margin-top: 2px;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    color: white;
+}
+
+
+/* =========================================
+   TOP ACTIONS
+========================================= */
+
+.top-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    gap: 8px;
+
+    margin-left: auto;
+}
+
+
+/* =========================================
+   TOP BUTTON
+========================================= */
+
+.top-button {
+    width: 50px;
+    height: 38px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #222;
+
+    color: white;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.top-button span {
+    font-size: 10px;
+    line-height: 12px;
+}
+
+.top-button small {
+    margin-top: 3px;
+
+    font-size: 9px;
+    color: #aaa;
+}
+
+.top-button:hover {
+    background: #333;
+}
+
+.top-button:active {
+    transform: scale(0.95);
+}
+/* =========================================
+   ROUND HISTORY
+========================================= */
+
+.round-history {
+    width: 740px;
+    height: 60px;
+
+    margin-left: 300px;
+    margin-top: 10px;
+
+    display: flex;
+    align-items: center;
+
+    background: rgba(29, 26, 4, 0.18);
+    border: 1px solid rgba(221, 204, 96, 0.45);
+    border-radius: 8px;
+
+    box-sizing: border-box;
+
+    padding: 0 10px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 0 12px rgba(255, 220, 0, 0.12);
+}
+
+
+/* =========================================
+   HISTORY TITLE
+========================================= */
+
+.history-header {
+    height: 90%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 14px 0 6px;
+
+    color: #75f011;
+
+    font-size: 9px;
+    font-weight: bold;
+
+    letter-spacing: 0.5px;
+
+    white-space: nowrap;
+
+    border-right: 1px ;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================
+   HISTORY LIST
+========================================= */
+
+.history-list {
+
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-left: 12px;
+    overflow: hidden;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+
+/* =========================================
+   HISTORY MULTIPLIER
+========================================= */
+
+.history-item {
+
+    min-width: 50px;
+    height: 22px;
+
+    padding: 0 6px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 4px;
+
+    font-size: 11px;
+    font-weight: bold;
+
+    box-sizing: border-box;
+
+    white-space: nowrap;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================
+   LOW MULTIPLIER
+========================================= */
+
+.history-blue {
+
+    color: #55aaff;
+
+    background: rgba(50, 130, 255, 0.12);
+
+    border: 1px solid rgba(50, 130, 255, 0.35);
+
+    box-shadow:
+        0 0 6px rgba(50, 130, 255, 0.08);
+}
+
+
+/* =========================================
+   MEDIUM MULTIPLIER
+========================================= */
+
+.history-purple {
+
+    color: #6ef1ca;
+
+    background: rgba(150, 70, 255, 0.12);
+
+    border: 1px solid rgba(150, 70, 255, 0.35);
+
+    box-shadow:
+        0 0 6px rgba(150, 70, 255, 0.08);
+}
+
+
+/* =========================================
+   HIGH MULTIPLIER
+========================================= */
+
+.history-green {
+
+    color: #35d879;
+
+    background: rgba(22, 163, 74, 0.12);
+
+    border: 1px solid rgba(22, 163, 74, 0.35);
+
+    box-shadow:
+        0 0 6px rgba(22, 163, 74, 0.08);
+}
+/* =========================================
+   GAME SCREEN
+   STYLING KEPT AS YOUR ORIGINAL
+========================================= */
+
+.game-screen {
+    background: radial-gradient(
+        ellipse at 25% 100%,
+        #2f62cf 0%,
+        #303061 48%,
+        #182531 100%
+    );
+    position: relative;
+    width: 740px;
+    height: 180px;
+    align-self: flex-start;
+    margin-top: 8px;
+    margin-left: 300px;
+    overflow: hidden;
+    border: 2px solid rgb(121, 124, 80);
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+/* live mode*/
+
+.live-mode {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    padding: 4px 8px;
+
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 5px;
+
+    color: white;
+    font-size: 9px;
+    font-weight: bold;
+
+    z-index: 20;
+}
+.live-dot {
+    position: relative;
+
+    width: 7px;
+    height: 7px;
+
+    margin-right: 6px;
+
+    background: #f8cf49dc;
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 5px #4fee3a,
+        0 0 10px #3aeb43;
+
+    z-index: 1;
+}
+
+
+/* OUTWARD LIVE SIGNAL */
+.live-dot::before {
+    content: "";
+
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 7px;
+    height: 7px;
+
+    background: transparent;
+    border: 1px solid #ff2b2b;
+    border-radius: 50%;
+
+    transform: translate(-50%, -50%);
+
+    animation: livePulse 2s ease-out infinite;
+}
+
+
+/* SECOND WAVE */
+.live-dot::after {
+    content: "";
+
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 7px;
+    height: 7px;
+
+    background: transparent;
+    border: 1px solid #e04e35;
+    border-radius: 50%;
+
+    transform: translate(-50%, -50%);
+
+    animation: livePulse 2s ease-out infinite;
+    animation-delay: 1.25s;
+}
+
+
+@keyframes livePulse {
+
+    0% {
+        width: 7px;
+        height: 7px;
+        opacity: 0.9;
+
+        box-shadow:
+            0 0 3px #ff2b2b;
+    }
+
+    70% {
+        width: 25px;
+        height: 25px;
+        opacity: 0.25;
+
+        box-shadow:
+            0 0 8px #ff2b2b;
+    }
+
+    100% {
+        width: 32px;
+        height: 32px;
+        opacity: 0;
+
+        box-shadow:
+            0 0 14px #ff2b2b;
+    }
+
+}
+/* =========================================
+   RAYS
+========================================= */
 
 .rays {
     position: absolute;
@@ -29,72 +471,386 @@ border:2px solid rgb(62, 63, 51);
 
 .rays::before {
     content: "";
+
     position: absolute;
+
     left: -760px;
     bottom: -760px;
+
     width: 1520px;
     height: 1520px;
+
     border-radius: 50%;
+
     background:
         repeating-conic-gradient(
             from -10deg,
             rgba(71, 231, 191, 0.34) 0deg 6deg,
             transparent 6deg 11deg
         );
+
     transform-origin: center center;
-    animation: spinRays 24s linear infinite;
+
+    /* Rays are stopped by default */
+    animation: none;
+
     filter: blur(0.4px);
+
     opacity: 0.85;
 }
+
 
 .ray {
     display: none;
 }
 
+
+/* =========================================
+   RAY MOVEMENT DURING FLIGHT
+========================================= */
+
+.rays.rays-active::before {
+    animation: spinRays 24s linear infinite;
+}
+
+
+/* =========================================
+   RAY ROTATION
+========================================= */
+
+
 @keyframes spinRays {
+
     from {
         transform: rotate(0deg);
     }
+
     to {
         transform: rotate(360deg);
     }
 }
 
-#plane{
-position:absolute;
-left:-5px;
-top:119px;
-width:86px;
-height:41px;
-z-index:5;
-object-fit:contain;
+/* =========================================
+   PLANE
+========================================= */
+
+#plane {
+    position: absolute;
+    left: -4px;
+    top: 120px;
+    width: 86px;
+    height: 43px;
+    z-index: 5;
+    object-fit: contain;
 }
 
-#multiplier{
-position:absolute;
-left:50%;
-top:50%;
-transform:translate(-50%, -50%);
-font-size:62px;
-font-weight:900;
-color:white;
-z-index:4;
+
+/* =========================================
+   MULTIPLIER
+========================================= */
+
+#multiplier {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 62px;
+    font-weight: 900;
+    color: white;
+    z-index: 4;
 }
 
-canvas{
-position:absolute;
-top:0;
-left:0;
-z-index:1;
+
+/* =========================================
+   CANVAS
+========================================= */
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
 }
 
-#loading{
-position:absolute;
-left:50%;
-top:50%;
-transform:translate(-50%, -50%);
-font-size:60px;
-color:rgb(218, 20, 20);
-z-index:6;
-display:none;
+
+/* =========================================
+   LOADING
+========================================= */
+#loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 180px;
+    transform: translate(-50%, -50%);
+    z-index: 20;
 }
+
+.countdown-line {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.countdown-line {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.countdown-progress {
+    width: 100%;
+    height: 100%;
+    background: #ec1a1a;
+    border-radius: 10px;
+
+    /* Start shrinking from the LEFT */
+    transform-origin: left center;
+
+    animation: countdownProgress 5s linear forwards;
+}
+
+@keyframes countdownProgress {
+
+    0% {
+        transform: scaleX(1);
+    }
+
+    100% {
+        transform: scaleX(0);
+    }
+}
+
+.bottom-cards {
+    width: 748px;              /* Increased card area */
+    display: flex;
+    flex-direction: row;
+    gap: 4px;                 /* More space between cards */
+    align-self: flex-start;
+    margin-top: 2px;
+    margin-left: 300px;
+    box-sizing: border-box;
+    
+}
+
+
+/* =========================================
+   INDIVIDUAL CARD
+========================================= */
+
+.bottom-card {
+    flex: 2;
+    height: 150px;
+    background: #151a22;
+     border: 2px solid rgb(77, 78, 57);
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.35);
+}
+
+
+/* =========================================
+   GREEN BUTTON
+========================================= */
+
+.green-button {
+    width: 40%;                /* Smaller button */
+    height: 74px;              /* Smaller height */
+    border: whitesmoke;
+    border-radius: 7px;
+    background: #38eb38;
+    color: white;
+    font-size: 13px;           /* Slightly smaller text */
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    /* MOVE BUTTON TO THE RIGHT */
+    transform: translateX(78px);
+}
+
+.bet-label {
+    font-size: 14px;
+    color: white;
+}
+
+.bet-value {
+    margin-top: 2px;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    color: white;
+}
+
+.green-button:hover {
+    background: #22c55e;
+}
+
+
+.green-button:active {
+    transform: translateX(10px) scale(0.96);
+}
+
+/* =========================================
+   INDEPENDENT VERTICAL SIDE CARD
+========================================= */
+
+.side-card {
+    position: absolute;
+    left: 6px;
+    top: 50px;
+    width: 290px;
+    height: calc(100vh - 138px);
+    background: #151a22;
+    border: 1px solid #303844;
+    border-radius: 8px;
+    box-sizing: border-box;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+    z-index: 10;
+}
+
+.right-card {
+    position: absolute;
+    top: 50px;              /* Same general level as game */
+    left: 1050px;           /* Moves it to the right */
+    width: 300px;
+    height: 420px;
+    background: #151a22;
+    border: 1px solid #303844;
+    border-radius: 8px;
+    box-sizing: border-box;
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.35);
+}
+        /* =========================================
+           MOBILE
+        ========================================= */
+
+        @media (max-width: 600px) {
+
+            .top-bar {
+                height: 58px;
+
+                padding: 0 8px;
+
+                gap: 8px;
+            }
+
+            .aviator-icon {
+                font-size: 17px;
+            }
+
+            .balance-box {
+                width: 75px;
+                min-width: 75px;
+
+                height: 38px;
+            }
+
+            .balance-value {
+                font-size: 12px;
+            }
+
+            .top-button {
+                width: 42px;
+
+                height: 45px;
+            }
+
+            .top-button span {
+                font-size: 15px;
+            }
+
+            .top-button small {
+                font-size: 7px;
+            }
+
+            .game-screen {
+                width: 100%;
+
+                max-width: 600px;
+            }
+
+            .bottom-cards {
+                width: 100%;
+
+                max-width: 600px;
+
+                padding: 0 5px;
+            }
+
+        }
+        /* =========================================
+           MOBILE
+        ========================================= */
+
+        @media (max-width: 600px) {
+
+            .top-bar {
+                height: 58px;
+
+                padding: 0 8px;
+
+                gap: 8px;
+            }
+
+            .aviator-icon {
+                font-size: 17px;
+            }
+
+            .balance-box {
+                width: 75px;
+                min-width: 75px;
+
+                height: 38px;
+            }
+
+            .balance-value {
+                font-size: 12px;
+            }
+
+            .top-button {
+                width: 42px;
+
+                height: 45px;
+            }
+
+            .top-button span {
+                font-size: 15px;
+            }
+
+            .top-button small {
+                font-size: 7px;
+            }
+
+            .game-screen {
+                width: 100%;
+
+                max-width: 600px;
+            }
+
+            .bottom-cards {
+                width: 100%;
+
+                max-width: 600px;
+
+                padding: 0 5px;
+            }
+
+        }

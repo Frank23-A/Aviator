@@ -7,10 +7,58 @@
 </head>
 
 <body>
-<div>
-    <h1>Tob bar</h1>
+<header class="top-bar">
+
+    <!-- AVIATOR LOGO -->
+    <div class="top-logo">
+        <span class="aviator-icon">Aviator</span>
+    </div>
+
+    <!-- BALANCE -->
+    <div class="balance-box">
+        <span class="balance-label">Balance</span>
+        <span class="balance-value" id="balance">0.00</span>
+    </div>
+
+    <!-- TOP ACTIONS -->
+    <div class="top-actions">
+
+        <button class="top-button" id="historyButton">
+            <span>R</span>
+            <small>History</small>
+        </button>
+
+        <button class="top-button" id="soundButton">
+            <span>S</span>
+            <small>Sound</small>
+        </button>
+
+        <button class="top-button" id="menuButton">
+            <span>M</span>
+            <small>Menu</small>
+        </button>
+
+    </div>
+
+</header>
+
+<div class="round-history">
+
+    <div class="history-header">
+        Round history
+    </div>
+
+    <div id="historyList" class="history-list">
+        <!-- Round results appear here -->
+    </div>
+
 </div>
+
 <div class="game-screen" id="game">
+    <div class="live-mode">
+        <span class="live-dot"></span>
+        LIVE MODE
+    </div>
     <div class="rays">
         <div class="ray"></div>
         <div class="ray"></div>
@@ -26,8 +74,37 @@
     </div>
     <img id="plane" src="../static/img/aviator.png" alt="Plane">
     <canvas id="trail"></canvas>
-    <div id="loading"></div>
+    <div id="loading">
+    <div class="countdown-line">
+        <div class="countdown-progress"></div>
+    </div>
+</div>
     <div id="multiplier">1.00x</div>
+</div>
+
+<div class="bottom-cards">
+    <div class="bottom-card">
+        <button class="green-button" id="cardButton1">
+            <span class="bet-label">Bet</span>
+            <span class="bet-value" id="balance">Ksh 0.00</span>
+        </button>
+    </div>
+    <div class="bottom-card">
+        <button class="green-button" id="cardButton1">
+            <span class="bet-label">Bet</span>
+            <span class="bet-value" id="balance">Ksh 0.00</span>
+        </button>
+    </div>
+</div>
+
+<div class="side-card">
+
+    <!-- You can put anything here later -->
+
+</div>
+
+<div class="right-card">
+    <!-- Your content will go here -->
 </div>
 
 <script src="../static/aviator.js"></script>
