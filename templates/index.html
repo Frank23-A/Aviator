@@ -19,22 +19,9 @@
 <main class="dashboard-layout">
     <aside class="live-bets-panel">
 
-    <!-- =========================================
-         BET TABS
-    ========================================== -->
+        <div class="bets-tabs" role="tablist">
 
-    <div
-        class="bets-tabs"
-        role="tablist"
-        aria-label="Bet list filters"
-    >
-
-        <button
-            class="bets-tab active"
-            type="button"
-        >
-            All Bets
-        </button>
+        <button class="bets-tab active" type="button">All Bets</button>
 
         <button
             class="bets-tab"
@@ -53,10 +40,6 @@
     </div>
 
 
-    <!-- =========================================
-         ALL BETS
-    ========================================== -->
-
     <div class="all-bets-info">
 
         <div class="all-bets-title">
@@ -66,41 +49,30 @@
         <div
             class="all-bets-count"
             id="allBetsCount"
-        >
-            1500
-        </div>
+        ></div>
 
     </div>
 
 
-    <!-- =========================================
-         TABLE HEAD
-    ========================================== -->
-
     <div class="bets-table-head">
 
         <span>Player</span>
-
         <span>Bet KES</span>
-
         <span>X</span>
-
         <span>Win KES</span>
 
     </div>
 
 
-    <!-- =========================================
-         RANDOM BETS
-    ========================================== -->
+    <!-- SAME AREA USED BY ALL / PREVIOUS / TOP -->
 
     <div
         class="bets-list"
         id="liveBetsList"
     ></div>
 
-</aside>
 
+</aside>
     <section class="dashboard-main" aria-label="Aviator game">
         <div class="round-history">
             <div id="historyList" class="history-list" aria-live="polite"></div>

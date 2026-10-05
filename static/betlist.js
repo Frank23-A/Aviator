@@ -18,6 +18,16 @@ window.previousRoundBets =
 
 
 /* =========================================
+   CURRENT LIVE ROUND STORAGE
+   IMPORTANT:
+   Keeps live bets safe when switching tabs.
+========================================= */
+
+window.currentLiveBets =
+    window.currentLiveBets || [];
+
+
+/* =========================================
    RANDOM DATA
 ========================================= */
 
@@ -109,10 +119,8 @@ function randomBetAmount(
 
     const minAmount = 10;
 
-
     const progress =
         index / (totalBets - 1);
-
 
     let amount =
         maxAmount -
@@ -121,21 +129,17 @@ function randomBetAmount(
             minAmount
         ) * progress;
 
-
     const randomFactor =
         0.75 +
         Math.random() * 0.25;
 
-
     amount *= randomFactor;
-
 
     amount =
         Math.max(
             minAmount,
             amount
         );
-
 
     return amount.toFixed(2);
 
@@ -154,25 +158,20 @@ function createBetRow(
     const row =
         document.createElement("div");
 
-
     row.className =
         "bet-row";
-
 
     const player =
         randomPlayer();
 
-
     const icon =
         randomItem(betIcons);
-
 
     const amount =
         randomBetAmount(
             index,
             totalBets
         );
-
 
     row.innerHTML = `
 
@@ -184,21 +183,17 @@ function createBetRow(
 
         </span>
 
-
         <span>
             ${amount}
         </span>
 
-
         <span class="multiplier-value">
         </span>
-
 
         <span>
         </span>
 
     `;
-
 
     return row;
 
@@ -207,7 +202,6 @@ function createBetRow(
 
 /* =========================================
    SAVE CURRENT ROUND
-   BEFORE GENERATING NEW ROUND
 ========================================= */
 
 function savePreviousRound() {
@@ -218,7 +212,6 @@ function savePreviousRound() {
                 ".bet-row"
             )
         );
-
 
     if (rows.length === 0) {
 
@@ -234,7 +227,6 @@ function savePreviousRound() {
                 row.querySelector(
                     ".player-name"
                 );
-
 
             const player =
                 playerElement
@@ -295,6 +287,72 @@ function savePreviousRound() {
 
 
 /* =========================================
+   SAVE LIVE BET DOM
+   BEFORE SWITCHING TABS
+========================================= */
+
+function saveCurrentLiveBets() {
+
+    if (!betsList) {
+
+        return;
+
+    }
+
+
+    window.currentLiveBets =
+        Array.from(
+            betsList.querySelectorAll(
+                ".bet-row"
+            )
+        ).map(
+            row =>
+                row.cloneNode(true)
+        );
+
+}
+
+
+/* =========================================
+   RESTORE LIVE BET DOM
+========================================= */
+
+function restoreCurrentLiveBets() {
+
+    if (!betsList) {
+
+        return;
+
+    }
+
+
+    betsList.innerHTML = "";
+
+
+    if (
+        !window.currentLiveBets ||
+        window.currentLiveBets.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    window.currentLiveBets.forEach(
+        row => {
+
+            betsList.appendChild(
+                row.cloneNode(true)
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================
    GENERATE ALL BETS
 ========================================= */
 
@@ -306,6 +364,14 @@ function generateBets() {
     const totalBets =
         randomTotalBets();
 
+
+    /*
+       IMPORTANT:
+       This is where the random number
+       is generated.
+
+       Nothing is hardcoded here.
+    */
 
     if (allBetsCount) {
 
@@ -330,11 +396,19 @@ function generateBets() {
 
     }
 
+
+    /*
+       Save the generated live bets
+       immediately.
+    */
+
+    saveCurrentLiveBets();
+
 }
 
 
 /* =========================================
-   RANDOMLY SELECT WINNERS
+   RANDOM WINNERS
 ========================================= */
 
 function addRandomWinner() {
@@ -422,6 +496,15 @@ function addRandomWinner() {
                 );
 
 
+    /*
+       Save changes so that if user
+       switches tabs, winner state
+       is preserved.
+    */
+
+    saveCurrentLiveBets();
+
+
     const delay =
         600 +
         Math.random() * 900;
@@ -443,21 +526,21 @@ function addRandomWinner() {
 function startNewBetRound() {
 
     /*
-       SAVE THE ROUND THAT JUST ENDED
+       Save round that just ended
     */
 
     savePreviousRound();
 
 
     /*
-       CREATE NEW ROUND
+       Generate completely new round
     */
 
     generateBets();
 
 
     /*
-       START RANDOM WINNERS
+       Start random winners
     */
 
     addRandomWinner();
