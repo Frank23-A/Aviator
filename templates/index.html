@@ -12,38 +12,94 @@
     <div class="top-logo"><span class="aviator-icon">Aviator</span></div>
     <div class="top-bar-spacer"></div>
     <div class="header-balance"><strong id="headerBalance">{{ '{:,.2f}'.format(user.balance) }}</strong><span>USD</span></div>
-    <button class="menu-icon" id="menuButton" type="button" aria-label="Open menu">☰</button>
+    <button class="menu-button" id="menuButton" type="button" aria-label="Open menu">☰</button>
     <button class="logout-button" id="logoutButton" type="button">Logout</button>
 </header>
 
 <main class="dashboard-layout">
     <aside class="live-bets-panel">
-        <div class="bets-tabs" role="tablist" aria-label="Bet list filters">
-            <button class="bets-tab active" type="button">All Bets</button>
-            <button class="bets-tab" type="button">Previous</button>
-            <button class="bets-tab" type="button">Top</button>
+
+    <!-- =========================================
+         BET TABS
+    ========================================== -->
+
+    <div
+        class="bets-tabs"
+        role="tablist"
+        aria-label="Bet list filters"
+    >
+
+        <button
+            class="bets-tab active"
+            type="button"
+        >
+            All Bets
+        </button>
+
+        <button
+            class="bets-tab"
+            type="button"
+        >
+            Previous
+        </button>
+
+        <button
+            class="bets-tab"
+            type="button"
+        >
+            Top
+        </button>
+
+    </div>
+
+
+    <!-- =========================================
+         ALL BETS
+    ========================================== -->
+
+    <div class="all-bets-info">
+
+        <div class="all-bets-title">
+            ALL BETS
         </div>
-        <div class="bets-summary">
-            <div class="avatar-stack" aria-hidden="true"><span>🟢</span><span>🔵</span><span>🟣</span></div>
-            <div class="bets-summary-total"><strong id="totalWin">3,903.00</strong><span>Total win USD</span></div>
-            <div class="bets-progress-label"><span>185/334 Bets</span><span>55%</span></div>
-            <div class="bets-progress"><span></span></div>
+
+        <div
+            class="all-bets-count"
+            id="allBetsCount"
+        >
+            1500
         </div>
-        <div class="bets-table-head"><span>Player</span><span>Bet USD</span><span>X</span><span>Win USD</span></div>
-        <div class="bets-list" id="liveBetsList">
-            <div class="bet-row"><span class="player-name"><i>🎲</i>d***1</span><span>100.00</span><span></span><span></span></div>
-            <div class="bet-row"><span class="player-name"><i>🎲</i>d***1</span><span>100.00</span><span></span><span></span></div>
-            <div class="bet-row winner"><span class="player-name"><i>🟣</i>d***0</span><span>100.00</span><span class="multiplier-value">2.41x</span><span>241.00</span></div>
-            <div class="bet-row winner"><span class="player-name"><i>⚫</i>d***9</span><span>100.00</span><span class="multiplier-value">4.16x</span><span>416.00</span></div>
-            <div class="bet-row"><span class="player-name"><i>⚫</i>d***9</span><span>100.00</span><span></span><span></span></div>
-            <div class="bet-row winner"><span class="player-name"><i>🔵</i>d***3</span><span>100.00</span><span class="multiplier-value">1.95x</span><span>195.00</span></div>
-            <div class="bet-row winner"><span class="player-name"><i>🔵</i>d***3</span><span>100.00</span><span class="multiplier-value">2.12x</span><span>212.00</span></div>
-            <div class="bet-row winner"><span class="player-name"><i>🟤</i>d***0</span><span>100.00</span><span class="multiplier-value">3.14x</span><span>314.00</span></div>
-            <div class="bet-row"><span class="player-name"><i>⚪</i>d***6</span><span>100.00</span><span></span><span></span></div>
-            <div class="bet-row"><span class="player-name"><i>⚪</i>d***6</span><span>100.00</span><span></span><span></span></div>
-        </div>
-        <div class="bets-footer"><span>◈ &nbsp;Provably Fair Game</span><span>Powered by <b>SPRIBE</b></span></div>
-    </aside>
+
+    </div>
+
+
+    <!-- =========================================
+         TABLE HEAD
+    ========================================== -->
+
+    <div class="bets-table-head">
+
+        <span>Player</span>
+
+        <span>Bet KES</span>
+
+        <span>X</span>
+
+        <span>Win KES</span>
+
+    </div>
+
+
+    <!-- =========================================
+         RANDOM BETS
+    ========================================== -->
+
+    <div
+        class="bets-list"
+        id="liveBetsList"
+    ></div>
+
+</aside>
 
     <section class="dashboard-main" aria-label="Aviator game">
         <div class="round-history">
@@ -111,7 +167,242 @@
     </section>
 </main>
 
+
+<!-- =========================================
+     MENU OVERLAY
+========================================= -->
+
+<div class="menu-overlay" id="menuOverlay"></div>
+
+
+<!-- =========================================
+     RIGHT SIDE MENU
+========================================= -->
+
+<aside class="side-menu" id="sideMenu">
+
+    <!-- PROFILE -->
+
+    <div class="profile-section">
+
+        <div class="avatar">
+            ◉
+        </div>
+
+        <div class="user-info">
+
+            <div class="user-number">
+                254757XXX052
+            </div>
+
+        </div>
+
+        <button class="change-avatar" type="button">
+            ◯ Change<br>
+            Avatar
+        </button>
+
+    </div>
+
+
+    <!-- =====================================
+         SETTINGS
+    ====================================== -->
+
+    <div class="settings-section">
+
+        <!-- SOUND -->
+
+        <div class="setting-row">
+
+           <svg viewBox="0 0 24 24">
+                <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
+                <path d="M16 8c1.5 1 2 2 2 4s-.5 3-2 4"></path>
+            </svg>
+       
+
+            <div class="setting-name">
+                Sound
+            </div>
+
+            <div class="toggle" data-setting="sound">
+
+                <div class="toggle-circle"></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- MUSIC -->
+
+        <div class="setting-row">
+
+            <svg viewBox="0 0 24 24">
+                <path d="M9 18V5l11-2v13"></path>
+                <circle cx="6" cy="18" r="3"></circle>
+               <circle cx="17" cy="16" r="3"></circle>
+            </svg>
+
+            <div class="setting-name">
+                Music
+            </div>
+
+            <div class="toggle active" data-setting="music">
+
+                <div class="toggle-circle"></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ANIMATION -->
+
+        <div class="setting-row">
+
+            <div class="setting-icon">
+                ♧
+            </div>
+
+            <div class="setting-name">
+                Animation
+            </div>
+
+            <div class="toggle active" data-setting="animation">
+
+                <div class="toggle-circle"></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- DIVIDER -->
+
+    <div class="menu-divider"></div>
+
+
+    <!-- =====================================
+         MENU ITEMS
+    ====================================== -->
+
+    <div class="menu-item">
+
+        <div class="menu-item-icon">
+            ☆
+        </div>
+
+        <div class="menu-item-text">
+            Free Bets
+        </div>
+
+    </div>
+
+
+    <div class="menu-item">
+
+        <div class="menu-item-icon">
+            ◷
+        </div>
+
+        <div class="menu-item-text">
+            My Bet History
+        </div>
+
+    </div>
+
+
+    <div class="menu-item">
+
+        <div class="menu-item-icon">
+            ▣
+        </div>
+
+        <div class="menu-item-text">
+            Game Limits
+        </div>
+
+    </div>
+
+
+    <div class="menu-item">
+
+        <div class="menu-item-icon">
+            ?
+        </div>
+
+        <div class="menu-item-text">
+            How To Play
+        </div>
+
+    </div>
+
+
+    <div class="menu-item">
+
+        <div class="menu-item-icon">
+            ▤
+        </div>
+
+        <div class="menu-item-text">
+            Game Rules
+        </div>
+
+    </div>
+
+
+    <div class="menu-item">
+
+        <div class="menu-item-icon">
+            ♢
+        </div>
+
+        <div class="menu-item-text">
+            Provably Fair Settings
+        </div>
+
+    </div>
+
+
+    <div class="menu-item">
+
+        <div class="menu-item-icon">
+            ▤
+        </div>
+
+        <div class="menu-item-text">
+            Game Room: Room #3
+        </div>
+
+    </div>
+
+
+    <!-- =====================================
+         HOME
+    ====================================== -->
+
+    <div class="home-item" id="homeButton">
+
+        <svg viewBox="0 0 24 24">
+            <path d="M3 10.5L12 3l9 7.5"></path>
+            <path d="M5 9.5V21h14V9.5"></path>
+            <path d="M9 21v-7h6v7"></path>
+        </svg>
+
+        <span>Home</span>
+
+    </div>
+
+</aside>
+
 <script src="{{ url_for('static', filename='aviator.js', v='no-dance-transition-oscillation') }}"></script>
+<script src="{{ url_for('static', filename='sidemenu.js') }}"></script>
+<script src="{{ url_for('static', filename='betlist.js') }}"></script>
+<script src="{{ url_for('static', filename='previous.js') }}"></script>
+
 <script>
     document.getElementById('logoutButton').addEventListener('click', function () {
         fetch('/logout', {

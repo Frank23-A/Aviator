@@ -4,6 +4,7 @@ let interval
 let flightTick = 0
 let countdownTimer = null
 
+
 const plane = document.getElementById("plane")
 const canvas = document.getElementById("trail")
 const ctx = canvas.getContext("2d")
@@ -12,6 +13,7 @@ const gameScreen = document.getElementById("game")
 const loading = document.getElementById("loading")
 const multiplierDisplay = document.getElementById("multiplier")
 const rays = document.querySelector(".rays")
+
 
 // Attach at the visible lower rear fuselage, below the wing and clear of transparent padding.
 const planeTailXRatio = 0.15
@@ -76,6 +78,7 @@ window.addEventListener("resize", resizeGameCanvas)
 if("ResizeObserver" in window){
     new ResizeObserver(resizeGameCanvas).observe(gameScreen)
 }
+
 
 document.querySelectorAll(".bottom-card").forEach(card => {
     let stake = 1
@@ -451,7 +454,7 @@ function updateGame(){
     placePlaneAtTrailAnchor(x, y)
 
     if(flightProgress >= danceStartProgress) {
-        plane.style.transform = "rotate(${-currentAngle}deg)"
+        plane.style.transform = `rotate(${-currentAngle}deg)`
     }
     else {
         plane.style.transform = "rotate(0deg)"
@@ -504,7 +507,18 @@ function updateGame(){
 
 
         addRoundHistory(crashPoint)
+        
+        window.dispatchEvent(
+           new CustomEvent(
+            "aviatorCrash", { 
+                detail: { 
+                    crash: crashPoint
+                }
+            }
+        ))
+
         setRaysActive(false)
+        
 
         plane.style.display = "block"
         canvas.style.display = "block"
@@ -546,9 +560,25 @@ function updateGame(){
 
 
         countdownTimer = setTimeout(() => {
+
             setLoadingVisible(false)
+
             countdownTimer = null
+
+
+            /* =================================
+               START NEW LIVE BET ROUND
+            ================================= */
+
+            startNewBetRound()
+
+
+            /* =================================
+               START NEXT AVIATOR ROUND
+            ================================= */
+
             startRound()
+
         }, 5000)
 
     }
