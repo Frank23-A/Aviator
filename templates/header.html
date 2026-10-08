@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>footer</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header.css', v='rays-only-during-flight') }}">
+</head>
+
+</head>
+<body>
+
+
+<!-- =========================================================
+     MAIN HEADER
+========================================================= -->
+
+<header class="header">
+
+
+    <!-- =====================================================
+         TOP ROW
+    ====================================================== -->
+
+    <div class="top-row">
+
+        <div
+            class="hamburger"
+            onclick="toggleMenu()"
+            aria-label="Open menu"
+            role="button"
+            tabindex="0"
+        >
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+
+        <!-- === LOGO == -->
+        <a href="home.html" class="logo" >Betin!<span>.com</span></a>
+
+
+        <!-- ==== RIGHT MENU ==== -->
+
+        <div class="right-menu">
+
+
+            <!-- =================================================
+                 NOTIFICATIONS
+            ================================================== -->
+
+            <a
+                href="notifications.html" class="right-item" aria-label="Notifications">
+                <svg viewBox="0 0 24 24">
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                    <path d="M10 21h4"></path>
+                </svg>
+                <span class="text"> Notifications</span>
+            </a>
+
+
+            <!-- =================================================
+                 MY BETS
+            ================================================== -->
+
+            <a
+                href="my-bets.html"
+                class="right-item"
+                aria-label="My Bets"
+            >
+
+                <svg viewBox="0 0 24 24">
+
+                    <rect
+                        x="4"
+                        y="4"
+                        width="16"
+                        height="16"
+                        rx="3"
+                    ></rect>
+
+                    <path
+                        d="M8 9h8"
+                    ></path>
+
+                    <path
+                        d="M8 13h5"
+                    ></path>
+
+                    <path
+                        d="M8 17h3"
+                    ></path>
+
+                </svg>
+
+                <span class="text">
+                    My Bets
+                </span>
+
+            </a>
+
+
+            <!-- =================================================
+                 PROFILE
+            ================================================== -->
+
+            <a
+                href="profile.html"
+                class="right-item"
+                aria-label="Profile"
+            >
+
+                <svg viewBox="0 0 24 24">
+
+                    <circle
+                        cx="12"
+                        cy="8"
+                        r="3"
+                    ></circle>
+
+                    <path
+                        d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"
+                    ></path>
+
+                </svg>
+
+                <span class="text">
+                    Profile
+                </span>
+
+            </a>
+
+
+            <!-- =================================================
+                 DEPOSIT
+            ================================================== -->
+
+            <button
+                class="deposit"
+                type="button"
+                onclick="deposit()"
+            >
+
+                Deposit
+
+            </button>
+
+
+            <!-- =================================================
+                 THEME
+            ================================================== -->
+
+            <button
+                class="theme-button"
+                id="themeButton"
+                type="button"
+                onclick="toggleTheme()"
+                aria-label="Toggle theme"
+            >
+
+                <!-- SUN -->
+
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="4.2"
+                        fill="currentColor"
+                    ></circle>
+
+                    <g
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.4"
+                        stroke-linecap="round"
+                    >
+                        <line x1="12" y1="1.8" x2="12" y2="4.1"></line>
+                        <line x1="12" y1="19.9" x2="12" y2="22.2"></line>
+                        <line x1="1.8" y1="12" x2="4.1" y2="12"></line>
+                        <line x1="19.9" y1="12" x2="22.2" y2="12"></line>
+                        <line x1="4.8" y1="4.8" x2="6.5" y2="6.5"></line>
+                        <line x1="17.5" y1="17.5" x2="19.2" y2="19.2"></line>
+                        <line x1="17.5" y1="6.5" x2="19.2" y2="4.8"></line>
+                        <line x1="4.8" y1="19.2" x2="6.5" y2="17.5"></line>
+                    </g>
+
+                </svg>
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         BOTTOM NAVIGATION
+    ========================================================== -->
+
+    <div class="bottom-row">
+
+
+        <!-- HOME -->
+
+        <a
+            href="home.html"
+            class="nav-item"
+        >
+            Home
+        </a>
+
+
+        <!-- LIVE -->
+
+        <a
+            href="live.html"
+            class="nav-item"
+        >
+            Live (136)
+        </a>
+
+
+        <!-- JACKPOTS -->
+
+        <a
+            href="jackpots.html"
+            class="nav-item"
+        >
+            Jackpots
+        </a>
+
+
+        <!-- SHIKISHA BET -->
+
+        <a
+            href="shikisha-bet.html"
+            class="nav-item"
+        >
+            Shikisha Bet
+        </a>
+
+
+        <!-- =================================================
+             AVIATOR
+
+             YOUR EXISTING AVIATOR PAGE
+             IS index.html
+        ================================================== -->
+
+        <a href="{{ url_for('aviator') }}" class="nav-item">Aviator</a>
+        <!-- =================================================
+             LIGI BIGI
+             NEW LABEL
+        ================================================== -->
+
+        <a
+            href="ligi-bigi.html"
+            class="nav-item"
+        >
+
+            <span class="new">
+                New
+            </span>
+
+            Ligi Bigi
+
+        </a>
+
+
+        <!-- =================================================
+             CASINO
+             NEW LABEL
+        ================================================== -->
+
+        <a
+            href="casino.html"
+            class="nav-item"
+        >
+
+            <span class="new">
+                New
+            </span>
+
+            Casino
+
+        </a>
+
+
+        <!-- PROMOTIONS -->
+
+        <a
+            href="promotions.html"
+            class="nav-item"
+        >
+            Promotions (15)
+        </a>
+
+
+        <!-- =================================================
+             VIRTUALS
+             NEW LABEL
+        ================================================== -->
+
+        <a
+            href="virtuals.html"
+            class="nav-item"
+        >
+
+            <span class="new">
+                New
+            </span>
+
+            Virtuals
+
+        </a>
+
+
+        <!-- =================================================
+             BETIKA FASTA
+             NEW LABEL
+        ================================================== -->
+
+        <a
+            href="betika-fasta.html"
+            class="nav-item"
+        >
+
+            <span class="new">
+                New
+            </span>
+
+            Betika Fasta
+
+        </a>
+
+
+        <!-- =================================================
+             CRASH GAMES
+             NEW LABEL
+        ================================================== -->
+
+        <a
+            href="crash-games.html"
+            class="nav-item"
+        >
+
+            <span class="new">
+                New
+            </span>
+
+            Crash Games
+
+        </a>
+
+
+        <!-- LIVE SCORE -->
+
+        <a
+            href="live-score.html"
+            class="nav-item"
+        >
+            Live Score
+        </a>
+
+
+        <!-- APP -->
+
+        <a
+            href="app.html"
+            class="nav-item"
+        >
+            App
+        </a>
+
+
+        <!-- =================================================
+             PRINT MATCHES
+             BETWEEN APP AND SEARCH
+        ================================================== -->
+
+        <a
+            href="print-matches.html"
+            class="print-matches"
+        >
+
+            <svg viewBox="0 0 24 24">
+
+                <path
+                    d="M6 9V3h12v6"
+                ></path>
+
+                <path
+                    d="M6 18H4a2 2 0 0 1-2-2v-5
+                       a2 2 0 0 1 2-2h16
+                       a2 2 0 0 1 2 2v5
+                       a2 2 0 0 1-2 2h-2"
+                ></path>
+
+                <rect
+                    x="6"
+                    y="14"
+                    width="12"
+                    height="7"
+                ></rect>
+
+                <path
+                    d="M18 12h.01"
+                ></path>
+
+            </svg>
+
+            <span>
+                Print Matches
+            </span>
+
+        </a>
+
+
+        <!-- =================================================
+             SEARCH
+        ================================================== -->
+
+        <a
+            href="search.html"
+            class="search"
+        >
+
+            <div
+                class="search-icon"
+                aria-hidden="true"
+            ></div>
+
+            <span>
+                Search
+            </span>
+
+        </a>
+
+    </div>
+
+</header>
+
+<div class="below-header">
+
+
+    <!-- GO BACK -->
+
+    <div
+        class="back"
+        onclick="goBack()"
+        role="button"
+        tabindex="0"
+    >
+
+        <strong>‹</strong>
+
+        &nbsp;
+
+        Go Back
+
+    </div>
+
+
+    <!-- FULLSCREEN -->
+
+    <div
+        class="fullscreen"
+        onclick="openFullscreen()"
+        role="button"
+        tabindex="0"
+    >
+
+        View Fullscreen
+
+        &nbsp;
+
+        ⛶
+
+    </div>
+
+</div>
+
+
+
+
+
+<!-- =========================================================
+     DEPOSIT POPUP
+========================================================= -->
+
+<div
+    class="deposit-overlay"
+    id="depositOverlay"
+    aria-hidden="true"
+>
+
+    <div
+        class="deposit-modal"
+        id="depositModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="depositTitle"
+    >
+
+        <button
+            class="deposit-close"
+            type="button"
+            onclick="closeDeposit()"
+            aria-label="Close deposit"
+        >
+            ×
+        </button>
+
+        <div class="deposit-card">
+
+            <h2
+                class="deposit-card-title"
+                id="depositTitle"
+            >
+                Deposit
+            </h2>
+
+            <p class="deposit-card-subtitle">
+                Send money into your Betika account
+            </p>
+
+            <div class="deposit-amount-box">
+
+                <button
+                    class="deposit-amount-btn"
+                    type="button"
+                    onclick="changeDepositAmount(-10)"
+                    aria-label="Decrease amount"
+                >
+                    −
+                </button>
+
+                <input
+                    class="deposit-amount-input"
+                    id="depositAmount"
+                    type="number"
+                    inputmode="numeric"
+                    min="10"
+                    step="10"
+                    placeholder="Enter amount to deposit"
+                    aria-label="Deposit amount"
+                >
+
+                <button
+                    class="deposit-amount-btn"
+                    type="button"
+                    onclick="changeDepositAmount(10)"
+                    aria-label="Increase amount"
+                >
+                    +
+                </button>
+
+            </div>
+
+            <p class="deposit-note">
+                Minimum KES 10. All transactions are subject to 5% tax.
+            </p>
+
+            <div class="deposit-quick-buttons">
+
+                <button
+                    class="deposit-quick-btn"
+                    type="button"
+                    onclick="setDepositAmount(100)"
+                >
+                    +100
+                </button>
+
+                <button
+                    class="deposit-quick-btn"
+                    type="button"
+                    onclick="setDepositAmount(200)"
+                >
+                    +200
+                </button>
+
+                <button
+                    class="deposit-quick-btn"
+                    type="button"
+                    onclick="setDepositAmount(500)"
+                >
+                    +500
+                </button>
+
+                <button
+                    class="deposit-quick-btn"
+                    type="button"
+                    onclick="setDepositAmount(1000)"
+                >
+                    +1000
+                </button>
+
+            </div>
+
+            <div class="deposit-methods">
+
+                <button
+                    class="deposit-method deposit-method-cashia"
+                    type="button"
+                    onclick="selectDepositMethod('Cashia')"
+                >
+
+                    <span class="deposit-free-label">
+                        Free Deposits
+                    </span>
+
+                    <span
+                        class="deposit-method-icon"
+                        aria-hidden="true"
+                    >
+                        ⟳
+                    </span>
+
+                    Deposit with Cashia
+
+                </button>
+
+                <button
+                    class="deposit-method deposit-method-mpesa"
+                    type="button"
+                    onclick="selectDepositMethod('Mpesa')"
+                >
+
+                    <span
+                        class="deposit-method-icon"
+                        aria-hidden="true"
+                    >
+                        ▣
+                    </span>
+
+                    Deposit with Mpesa
+
+                </button>
+
+            </div>
+
+            <p class="deposit-tax">
+                Cashia 100 ni 100! *Gaming tax applies
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+<script src="{{ url_for('static', filename='js/header.js') }}"></script>
+
+</body>
+</html>

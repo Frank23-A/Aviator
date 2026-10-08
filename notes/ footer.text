@@ -1,0 +1,302 @@
+
+
+        /* =========================================================
+           RESET
+        ========================================================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #111111;
+            color: #aeb8c4;
+            overflow-x: hidden;
+        }
+
+
+        /* =========================================================
+           FOOTER
+        ========================================================= */
+
+        .site-footer {
+            width: 100%;
+
+            min-height: 380px;
+
+            background: #152231;
+
+            color: #aeb8c4;
+
+            padding: 0 24px 38px;
+
+            position: relative;
+
+            display: block;
+
+            clear: both;
+
+            /*
+             * IMPORTANT:
+             * This keeps the footer in normal document flow.
+             * When connected to another page, content above it
+             * will automatically push the footer downward.
+             */
+        }
+
+
+        /* =========================================================
+           FOOTER INNER
+        ========================================================= */
+
+        .site-footer-inner {
+            width: min(720px, 100%);
+
+            margin: 0 auto;
+        }
+
+
+        /* =========================================================
+           BACK TO TOP
+        ========================================================= */
+
+        .footer-back-top {
+            display: block;
+
+            width: fit-content;
+
+            margin: 0 auto;
+
+            padding-top: 72px;
+
+            color: #aeb8c4;
+
+            text-decoration: none;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition:
+                color 0.2s ease,
+                transform 0.2s ease;
+        }
+
+
+        .footer-back-top:hover {
+            color: #ffffff;
+
+            transform: translateY(-2px);
+        }
+
+
+        /* =========================================================
+           FOOTER CONTENT
+        ========================================================= */
+
+        .footer-content {
+            display: grid;
+
+            grid-template-columns:
+                130px
+                1fr
+                1fr
+                1.35fr;
+
+            column-gap: 30px;
+
+            align-items: start;
+
+            margin-top: 78px;
+        }
+
+
+        /* =========================================================
+           BRAND
+        ========================================================= */
+
+        .footer-brand {
+            display: flex;
+
+            align-items: flex-start;
+        }
+
+
+        .footer-logo {
+            display: inline-block;
+
+            color: #ffe000;
+
+            text-decoration: none;
+
+            font-size: 26px;
+
+            font-weight: 800;
+
+            font-style: italic;
+
+            line-height: 1;
+        }
+
+
+        .footer-logo span {
+            color: #ffffff;
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            margin-left: 2px;
+        }
+
+
+        /* =========================================================
+           FOOTER COLUMNS
+        ========================================================= */
+
+        .footer-column {
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: flex-start;
+        }
+
+
+        .footer-column h3 {
+            margin: 0 0 18px;
+
+            color: #ffffff;
+
+            font-size: 15px;
+
+            font-weight: 700;
+        }
+
+
+        .footer-column a {
+            display: block;
+
+            margin-bottom: 11px;
+
+            color: #aeb8c4;
+
+            text-decoration: none;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+
+            transition: color 0.2s ease;
+        }
+
+
+        .footer-column a:hover {
+            color: #ffffff;
+        }
+
+
+        /* =========================================================
+           CONTACT
+        ========================================================= */
+
+        .footer-column p {
+            margin: 0 0 8px;
+
+            color: #aeb8c4;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+        }
+
+
+        .footer-contact-label {
+            margin-top: 3px !important;
+
+            margin-bottom: 2px !important;
+
+            color: #ffffff !important;
+
+            font-size: 13px !important;
+
+            font-weight: 700 !important;
+        }
+
+
+        /* =========================================================
+           TABLET
+        ========================================================= */
+
+        @media (max-width: 700px) {
+
+            .site-footer {
+                padding-left: 20px;
+
+                padding-right: 20px;
+            }
+
+
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+
+                row-gap: 42px;
+
+                column-gap: 35px;
+            }
+
+
+            .footer-brand {
+                grid-column: 1 / -1;
+            }
+
+        }
+
+
+        /* =========================================================
+           MOBILE
+        ========================================================= */
+
+        @media (max-width: 450px) {
+
+            .site-footer {
+                min-height: 0;
+
+                padding: 0 18px 35px;
+            }
+
+
+            .footer-back-top {
+                padding-top: 55px;
+            }
+
+
+            .footer-content {
+                grid-template-columns: 1fr;
+
+                row-gap: 30px;
+
+                margin-top: 55px;
+            }
+
+
+            .footer-brand {
+                grid-column: auto;
+            }
+
+        }
+
+

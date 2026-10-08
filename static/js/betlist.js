@@ -45,7 +45,11 @@ const playerDigits = [
     "1",
     "2",
     "3",
+    "4",
+    "5",
     "6",
+    "7",
+    "8",
     "9"
 ];
 
@@ -117,7 +121,7 @@ function randomBetAmount(
 
     const maxAmount = 3000;
 
-    const minAmount = 10;
+    const minAmount = 100;
 
     const progress =
         index / (totalBets - 1);

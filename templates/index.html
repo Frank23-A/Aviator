@@ -4,75 +4,44 @@
 <head>
 <title>Aviator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='rays-only-during-flight') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='rays-only-during-flight') }}">
 </head>
 
 <body>
+{% include 'header.html' %}
+
 <header class="top-bar">
     <div class="top-logo"><span class="aviator-icon">Aviator</span></div>
     <div class="top-bar-spacer"></div>
     <div class="header-balance"><strong id="headerBalance">{{ '{:,.2f}'.format(user.balance) }}</strong><span>USD</span></div>
     <button class="menu-button" id="menuButton" type="button" aria-label="Open menu">☰</button>
-    <button class="logout-button" id="logoutButton" type="button">Logout</button>
+   
 </header>
 
 <main class="dashboard-layout">
     <aside class="live-bets-panel">
-
         <div class="bets-tabs" role="tablist">
-
-        <button class="bets-tab active" type="button">All Bets</button>
-
-        <button
-            class="bets-tab"
-            type="button"
-        >
-            Previous
-        </button>
-
-        <button
-            class="bets-tab"
-            type="button"
-        >
-            Top
-        </button>
-
-    </div>
-
-
-    <div class="all-bets-info">
-
-        <div class="all-bets-title">
-            ALL BETS
+             <button class="bets-tab active" type="button">All Bets</button>
+             <button class="bets-tab" type="button">Previous </button>
+             <button class="bets-tab" type="button">Top</button>
         </div>
 
-        <div
-            class="all-bets-count"
-            id="allBetsCount"
-        ></div>
+        <div class="all-bets-info">
+              <div class="all-bets-title"> ALL BETS</div>
+              <div class="all-bets-count" id="allBetsCount"></div>
+        </div>
 
-    </div>
+        <div class="bets-table-head">
+              <span>Player</span>
+              <span>Bet KES</span>
+              <span>X</span>
+              <span>Win KES</span>
+        </div>
 
+         <!-- SAME AREA USED BY ALL / PREVIOUS / TOP -->
+         <div class="bets-list" id="liveBetsList"></div>
+    </aside>
 
-    <div class="bets-table-head">
-
-        <span>Player</span>
-        <span>Bet KES</span>
-        <span>X</span>
-        <span>Win KES</span>
-
-    </div>
-
-
-    <!-- SAME AREA USED BY ALL / PREVIOUS / TOP -->
-
-    <div
-        class="bets-list"
-        id="liveBetsList"
-    ></div>
-
-
-</aside>
     <section class="dashboard-main" aria-label="Aviator game">
         <div class="round-history">
             <div id="historyList" class="history-list" aria-live="polite"></div>
@@ -136,44 +105,17 @@
                 <button class="green-button" id="cardButton2" type="button"><span class="bet-label">Bet</span><span class="bet-value">1.00 USD</span></button>
             </section>
         </div>
-    </section>
-</main>
-
-
-<!-- =========================================
-     MENU OVERLAY
-========================================= -->
-
-<div class="menu-overlay" id="menuOverlay"></div>
-
-
-<!-- =========================================
-     RIGHT SIDE MENU
-========================================= -->
-
-<aside class="side-menu" id="sideMenu">
+    </section>  
+    
+    <aside class="side-menu" id="sideMenu">
 
     <!-- PROFILE -->
-
     <div class="profile-section">
-
-        <div class="avatar">
-            ◉
-        </div>
-
+        <div class="avatar"> ◉</div>
         <div class="user-info">
-
-            <div class="user-number">
-                254757XXX052
-            </div>
-
+            <div class="user-number"> 254757XXX052</div>
         </div>
-
-        <button class="change-avatar" type="button">
-            ◯ Change<br>
-            Avatar
-        </button>
-
+        <button class="change-avatar" type="button"> ◯ Change<br> Avatar </button>
     </div>
 
 
@@ -184,25 +126,15 @@
     <div class="settings-section">
 
         <!-- SOUND -->
-
         <div class="setting-row">
-
            <svg viewBox="0 0 24 24">
                 <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
                 <path d="M16 8c1.5 1 2 2 2 4s-.5 3-2 4"></path>
             </svg>
-       
-
-            <div class="setting-name">
-                Sound
-            </div>
-
+            <div class="setting-name">Sound</div>
             <div class="toggle" data-setting="sound">
-
                 <div class="toggle-circle"></div>
-
             </div>
-
         </div>
 
 
@@ -369,11 +301,32 @@
     </div>
 
 </aside>
+</main>
 
-<script src="{{ url_for('static', filename='aviator.js', v='no-dance-transition-oscillation') }}"></script>
-<script src="{{ url_for('static', filename='sidemenu.js') }}"></script>
-<script src="{{ url_for('static', filename='betlist.js') }}"></script>
-<script src="{{ url_for('static', filename='previous.js') }}"></script>
+
+<!-- =========================================
+     MENU OVERLAY
+========================================= -->
+
+<div class="menu-overlay" id="menuOverlay"></div>
+
+
+<!-- =========================================
+     RIGHT SIDE MENU
+========================================= -->
+
+
+
+<script src="{{ url_for('static', filename='js/aviator.js', v='no-dance-transition-oscillation') }}"></script>
+<script src="{{ url_for('static', filename='js/sidemenu.js') }}"></script>
+<script src="{{ url_for('static', filename='js/betlist.js') }}"></script>
+<script src="{{ url_for('static', filename='js/previous.js') }}"></script>
+
+<!-- =========================================
+     FOOTER CONTAINER
+========================================= -->
+
+
 
 <script>
     document.getElementById('logoutButton').addEventListener('click', function () {
@@ -388,6 +341,96 @@
             window.location.href = '/login';
         });
     });
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const footerContainer =
+        document.getElementById("footerContainer");
+
+    if (!footerContainer) {
+        return;
+    }
+
+    fetch("/footer")
+        .then(function (response) {
+
+            if (!response.ok) {
+                throw new Error("Failed to load footer");
+            }
+
+            return response.text();
+        })
+        .then(function (html) {
+
+            /*
+             * footer.html is a complete HTML document.
+             * Extract only its body content so that we don't
+             * create a second <html>, <head> or <body>.
+             */
+            const parser = new DOMParser();
+
+            const footerDocument =
+                parser.parseFromString(html, "text/html");
+
+            footerContainer.innerHTML =
+                footerDocument.body.innerHTML;
+
+
+            /*
+             * Copy footer styles from footer.html
+             * into the current page.
+             */
+            footerDocument.querySelectorAll("style").forEach(
+                function (style) {
+
+                    const newStyle =
+                        document.createElement("style");
+
+                    newStyle.textContent =
+                        style.textContent;
+
+                    document.head.appendChild(newStyle);
+
+                }
+            );
+
+
+            /*
+             * Run the Back To Top functionality.
+             */
+            const footerBackTop =
+                document.getElementById("footerBackTop");
+
+            if (footerBackTop) {
+
+                footerBackTop.addEventListener(
+                    "click",
+                    function (event) {
+
+                        event.preventDefault();
+
+                        window.scrollTo({
+                            top: 0,
+                            behavior: "smooth"
+                        });
+
+                    }
+                );
+
+            }
+
+        })
+        .catch(function (error) {
+
+            console.error(
+                "Footer loading error:",
+                error
+            );
+
+        });
+
+});
 </script>
 </body>
 </html>

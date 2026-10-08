@@ -1,0 +1,126 @@
+/* =========================================================
+   BETIKA FOOTER
+========================================================= */
+
+.site-footer {
+    width: 100%;
+    min-height: 380px;
+    background: #152231;
+    color: #aeb8c4;
+    padding: 0 24px 38px;
+    position: relative;
+}
+
+.site-footer-inner {
+    width: min(720px, 100%);
+    margin: 0 auto;
+}
+
+.footer-back-top {
+    display: block;
+    width: fit-content;
+    margin: 0 auto;
+    padding-top: 72px;
+    color: #dce2e8;
+    font-size: 12px;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.footer-back-top:hover {
+    color: #ffffff;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: 130px 1fr 1fr 1.35fr;
+    column-gap: 30px;
+    align-items: start;
+    margin-top: 78px;
+}
+
+.footer-brand {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.footer-logo {
+    color: #ffe000;
+    font-size: 29px;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -2px;
+    line-height: 24px;
+    text-shadow:
+        2px 2px 0 #143bca,
+        -1px -1px 0 #143bca;
+    text-decoration: none;
+}
+
+.footer-logo span {
+    display: block;
+    color: #4778db;
+    font-size: 8px;
+    letter-spacing: 0;
+    text-align: right;
+    margin-top: -1px;
+}
+
+.footer-column h3 {
+    margin: 0 0 16px;
+    color: #f4f6f8;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.footer-column a,
+.footer-column p {
+    display: block;
+    margin: 0 0 10px;
+    color: #aeb8c4;
+    font-size: 13px;
+    line-height: 1.35;
+    text-decoration: none;
+}
+
+.footer-column a:hover {
+    color: #ffffff;
+}
+
+.footer-contact-label {
+    color: #e8edf2 !important;
+    margin-bottom: 5px !important;
+}
+
+@media (max-width: 700px) {
+    .site-footer {
+        min-height: 500px;
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .footer-content {
+        grid-template-columns: 1fr 1fr;
+        row-gap: 30px;
+        column-gap: 24px;
+        margin-top: 55px;
+    }
+
+    .footer-brand {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 450px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-brand {
+        grid-column: auto;
+    }
+}
+
+
