@@ -6,17 +6,18 @@
 function toggleTheme() {
 
     const body =
-        document.body;
+        document.getElementById("siteHeader");
 
     const themeButton =
-        document.getElementById(
-            "themeButton"
-        );
+        document.getElementById("themeButton");
 
+    // Stop if the header or theme button does not exist.
+    if (!body || !themeButton) {
+        return;
+    }
 
-    body.classList.toggle(
-        "light-mode"
-    );
+    // Toggle the theme on the header only.
+    body.classList.toggle("light-mode");
 
 
     /* =====================================================
@@ -25,9 +26,7 @@ function toggleTheme() {
     ====================================================== */
 
     if (
-        body.classList.contains(
-            "light-mode"
-        )
+        body.classList.contains("light-mode")
     ) {
 
         themeButton.innerHTML = `
@@ -49,9 +48,7 @@ function toggleTheme() {
 
         `;
 
-        themeButton.style.color =
-            "#222222";
-
+        themeButton.style.color = "#222222";
 
         localStorage.setItem(
             "theme",
@@ -139,9 +136,7 @@ function toggleTheme() {
 
         `;
 
-        themeButton.style.color =
-            "#ffd000";
-
+        themeButton.style.color = "#ffd000";
 
         localStorage.setItem(
             "theme",
@@ -162,35 +157,27 @@ window.addEventListener(
     function () {
 
         const savedTheme =
-            localStorage.getItem(
-                "theme"
-            );
+            localStorage.getItem("theme");
 
+        const siteHeader =
+            document.getElementById("siteHeader");
 
-        if (
-            savedTheme === "light"
-        ) {
+        const themeButton =
+            document.getElementById("themeButton");
 
-            /*
-             * Add the class directly so the
-             * saved light theme does not
-             * accidentally toggle twice.
-             */
+        // Stop if the header or theme button does not exist.
+        if (!siteHeader || !themeButton) {
+            return;
+        }
 
-            document.body.classList.add(
-                "light-mode"
-            );
+        if (savedTheme === "light") {
 
-
-            const themeButton =
-                document.getElementById(
-                    "themeButton"
-                );
-
+            // Apply the saved theme to the header only.
+            siteHeader.classList.add("light-mode");
 
             themeButton.innerHTML = `
 
-                <svg viewBox="0 0 24 24">
+                 <svg viewBox="0 0 24 24" width="16" height="16">
 
                     <path
                         d="
@@ -200,14 +187,21 @@ window.addEventListener(
                             A6.7 6.7 0 0 0
                             21 12.8Z
                         "
+                        fill="currentColor"
                     ></path>
 
                 </svg>
 
             `;
 
-            themeButton.style.color =
-                "#222222";
+            themeButton.style.color = "#222222";
+
+        } else {
+
+            // Ensure the header starts in dark mode.
+            siteHeader.classList.remove("light-mode");
+
+            themeButton.style.color = "#ffd000";
 
         }
 
@@ -539,4 +533,3 @@ document
 
         }
     );
-

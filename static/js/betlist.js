@@ -1,3 +1,4 @@
+
 /* =========================================
    RANDOM LIVE BETS
 ========================================= */
@@ -19,12 +20,21 @@ window.previousRoundBets =
 
 /* =========================================
    CURRENT LIVE ROUND STORAGE
-   IMPORTANT:
-   Keeps live bets safe when switching tabs.
 ========================================= */
 
 window.currentLiveBets =
     window.currentLiveBets || [];
+
+
+/* =========================================
+   SYNCHRONIZED AVIATOR MULTIPLIER
+========================================= */
+
+window.currentAviatorMultiplier =
+    Number(window.currentAviatorMultiplier) || 1;
+
+let liveRoundActive = false;
+let winnerTimer = null;
 
 
 /* =========================================
@@ -81,19 +91,6 @@ function randomPlayer() {
 
 
 /* =========================================
-   RANDOM MULTIPLIER
-========================================= */
-
-function randomMultiplier() {
-
-    return (
-        Math.random() * 4 + 1.20
-    ).toFixed(2);
-
-}
-
-
-/* =========================================
    RANDOM TOTAL BETS
    MINIMUM = 500
    MAXIMUM = 1500
@@ -111,39 +108,29 @@ function randomTotalBets() {
 /* =========================================
    RANDOM BET AMOUNT
    HIGHEST ≈ 3000
-   LOWEST = 10
+   LOWEST = 100
 ========================================= */
 
-function randomBetAmount(
-    index,
-    totalBets
-) {
+function randomBetAmount(index, totalBets) {
 
     const maxAmount = 3000;
-
     const minAmount = 100;
 
     const progress =
-        index / (totalBets - 1);
+        totalBets > 1
+            ? index / (totalBets - 1)
+            : 0;
 
     let amount =
         maxAmount -
-        (
-            maxAmount -
-            minAmount
-        ) * progress;
+        (maxAmount - minAmount) * progress;
 
     const randomFactor =
-        0.75 +
-        Math.random() * 0.25;
+        0.75 + Math.random() * 0.25;
 
     amount *= randomFactor;
 
-    amount =
-        Math.max(
-            minAmount,
-            amount
-        );
+    amount = Math.max(minAmount, amount);
 
     return amount.toFixed(2);
 
@@ -154,48 +141,31 @@ function randomBetAmount(
    CREATE ONE BET
 ========================================= */
 
-function createBetRow(
-    index,
-    totalBets
-) {
+function createBetRow(index, totalBets) {
 
     const row =
         document.createElement("div");
 
-    row.className =
-        "bet-row";
+    row.className = "bet-row";
 
-    const player =
-        randomPlayer();
-
-    const icon =
-        randomItem(betIcons);
+    const player = randomPlayer();
+    const icon = randomItem(betIcons);
 
     const amount =
-        randomBetAmount(
-            index,
-            totalBets
-        );
+        randomBetAmount(index, totalBets);
 
     row.innerHTML = `
 
         <span class="player-name">
-
             <i>${icon}</i>
-
             ${player}
-
         </span>
 
-        <span>
-            ${amount}
-        </span>
+        <span>${amount}</span>
 
-        <span class="multiplier-value">
-        </span>
+        <span class="multiplier-value"></span>
 
-        <span>
-        </span>
+        <span></span>
 
     `;
 
@@ -205,83 +175,63 @@ function createBetRow(
 
 
 /* =========================================
-   SAVE CURRENT ROUND
+   SAVE PREVIOUS ROUND
 ========================================= */
 
 function savePreviousRound() {
 
+    if (!betsList) {
+        return;
+    }
+
     const rows =
         Array.from(
-            betsList.querySelectorAll(
-                ".bet-row"
-            )
+            betsList.querySelectorAll(".bet-row")
         );
 
     if (rows.length === 0) {
-
         return;
-
     }
-
 
     window.previousRoundBets =
         rows.map(row => {
 
             const playerElement =
-                row.querySelector(
-                    ".player-name"
-                );
+                row.querySelector(".player-name");
+
+            const multiplierElement =
+                row.querySelector(".multiplier-value");
 
             const player =
                 playerElement
                     ? playerElement.textContent.trim()
                     : "";
 
-
             const amount =
                 row.children[1]
-                    ? row.children[1]
-                        .textContent
-                        .trim()
+                    ? row.children[1].textContent.trim()
                     : "";
-
-
-            const multiplierElement =
-                row.querySelector(
-                    ".multiplier-value"
-                );
-
 
             const winnings =
                 row.children[3]
-                    ? row.children[3]
-                        .textContent
-                        .trim()
+                    ? row.children[3].textContent.trim()
                     : "";
-
 
             return {
 
-                player:
-                    player,
+                player: player,
 
-                amount:
-                    amount,
+                amount: amount,
 
                 multiplier:
                     multiplierElement
-                        ? multiplierElement
-                            .textContent
-                            .trim()
+                        ? multiplierElement.textContent.trim()
                         : "",
 
-                winnings:
-                    winnings,
+                winnings: winnings,
 
                 winner:
-                    row.classList.contains(
-                        "winner"
-                    )
+                    row.classList.contains("winner")
 
             };
 
@@ -298,21 +248,13 @@ function savePreviousRound() {
 function saveCurrentLiveBets() {
 
     if (!betsList) {
-
         return;
-
     }
-
 
     window.currentLiveBets =
         Array.from(
-            betsList.querySelectorAll(
-                ".bet-row"
-            )
-        ).map(
-            row =>
-                row.cloneNode(true)
-        );
+            betsList.querySelectorAll(".bet-row")
+        ).map(row => row.cloneNode(true));
 
 }
 
@@ -324,34 +266,25 @@ function saveCurrentLiveBets() {
 function restoreCurrentLiveBets() {
 
     if (!betsList) {
-
         return;
-
     }
 
-
     betsList.innerHTML = "";
-
 
     if (
         !window.currentLiveBets ||
         window.currentLiveBets.length === 0
     ) {
-
         return;
-
     }
 
+    window.currentLiveBets.forEach(row => {
 
-    window.currentLiveBets.forEach(
-        row => {
+        betsList.appendChild(
+            row.cloneNode(true)
+        );
 
-            betsList.appendChild(
-                row.cloneNode(true)
-            );
-
-        }
-    );
+    });
 
 }
 
@@ -362,28 +295,18 @@ function restoreCurrentLiveBets() {
 
 function generateBets() {
 
-    betsList.innerHTML = "";
+    if (!betsList) {
+        return;
+    }
 
+    betsList.innerHTML = "";
 
     const totalBets =
         randomTotalBets();
 
-
-    /*
-       IMPORTANT:
-       This is where the random number
-       is generated.
-
-       Nothing is hardcoded here.
-    */
-
     if (allBetsCount) {
-
-        allBetsCount.textContent =
-            totalBets;
-
+        allBetsCount.textContent = totalBets;
     }
-
 
     for (
         let i = 0;
@@ -392,19 +315,10 @@ function generateBets() {
     ) {
 
         betsList.appendChild(
-            createBetRow(
-                i,
-                totalBets
-            )
+            createBetRow(i, totalBets)
         );
 
     }
-
-
-    /*
-       Save the generated live bets
-       immediately.
-    */
 
     saveCurrentLiveBets();
 
@@ -412,114 +326,160 @@ function generateBets() {
 
 
 /* =========================================
-   RANDOM WINNERS
+   SYNCHRONIZED LIVE WINNERS
 ========================================= */
 
 function addRandomWinner() {
 
+    // Stop if the round is no longer active.
+    if (!liveRoundActive || !betsList) {
+        return;
+    }
+
     const rows =
         Array.from(
-            betsList.querySelectorAll(
-                ".bet-row"
-            )
+            betsList.querySelectorAll(".bet-row")
         );
-
 
     const nonGreenRows =
         rows.filter(
             row =>
-                !row.classList.contains(
-                    "winner"
-                )
+                !row.classList.contains("winner")
         );
 
-
-    if (
-        nonGreenRows.length === 0
-    ) {
-
+    if (nonGreenRows.length === 0) {
         return;
-
     }
 
-
-    const randomIndex =
-        Math.floor(
-            Math.random() *
-            nonGreenRows.length
-        );
-
-
     const selectedRow =
-        nonGreenRows[randomIndex];
+        nonGreenRows[
+            Math.floor(
+                Math.random() * nonGreenRows.length
+            )
+        ];
 
-
-    selectedRow.classList.add(
-        "winner"
-    );
-
+    /*
+       USE THE CURRENT AVIATOR MULTIPLIER.
+       DO NOT GENERATE A RANDOM MULTIPLIER.
+    */
 
     const multiplier =
-        randomMultiplier();
+        Number(window.currentAviatorMultiplier);
 
+    if (
+        !Number.isFinite(multiplier) ||
+        multiplier < 1
+    ) {
+        return;
+    }
 
     const amount =
         parseFloat(
-            selectedRow
-                .children[1]
+            selectedRow.children[1]
                 .textContent
                 .replace(/,/g, "")
         );
 
-
-    const winnings =
-        (
-            amount *
-            parseFloat(multiplier)
-        ).toFixed(2);
-
-
-    selectedRow
-        .querySelector(
-            ".multiplier-value"
-        )
-        .textContent =
-            multiplier + "x";
-
-
-    selectedRow
-        .children[3]
-        .textContent =
-            Number(winnings)
-                .toLocaleString(
-                    "en-US",
-                    {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }
-                );
-
+    if (!Number.isFinite(amount)) {
+        return;
+    }
 
     /*
-       Save changes so that if user
-       switches tabs, winner state
-       is preserved.
+       MARK THE SELECTED BET AS A WINNER.
+    */
+
+    selectedRow.classList.add("winner");
+
+    /*
+       DISPLAY THE SAME MULTIPLIER
+       AS THE AVIATOR GAME.
+    */
+
+    selectedRow
+        .querySelector(".multiplier-value")
+        .textContent =
+            multiplier.toFixed(2) + "x";
+
+    /*
+       CALCULATE DISPLAYED WINNINGS.
+    */
+
+    const winnings =
+        amount * multiplier;
+
+    selectedRow.children[3].textContent =
+        winnings.toLocaleString(
+            "en-US",
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        );
+
+    /*
+       SAVE THE UPDATED WINNER STATE.
     */
 
     saveCurrentLiveBets();
 
+    /*
+       SCHEDULE THE NEXT SIMULATED CASH-OUT.
+    */
 
-    const delay =
-        600 +
-        Math.random() * 900;
+    if (liveRoundActive) {
 
+        winnerTimer =
+            setTimeout(
+                addRandomWinner,
+                600 + Math.random() * 900
+            );
 
-    setTimeout(
-        addRandomWinner,
-        delay
-    );
+    }
 
 }
+
+
+/* =========================================
+   AVIATOR ROUND STARTED EVENT
+========================================= */
+
+window.addEventListener(
+    "aviatorRoundStarted",
+    function () {
+
+        clearTimeout(winnerTimer);
+        winnerTimer = null;
+
+        liveRoundActive = true;
+
+        window.currentAviatorMultiplier = 1;
+
+        /*
+           Start simulated cash-outs
+           for the new flight.
+        */
+
+        addRandomWinner();
+
+    }
+);
+
+
+/* =========================================
+   AVIATOR CRASH EVENT
+========================================= */
+
+window.addEventListener(
+    "aviatorCrash",
+    function () {
+
+        liveRoundActive = false;
+
+        clearTimeout(winnerTimer);
+        winnerTimer = null;
+
+    }
+);
 
 
 /* =========================================
@@ -530,23 +490,15 @@ function addRandomWinner() {
 function startNewBetRound() {
 
     /*
-       Save round that just ended
+       SAVE THE ROUND THAT JUST ENDED.
     */
 
     savePreviousRound();
 
-
     /*
-       Generate completely new round
+       GENERATE BETS FOR THE NEXT ROUND.
     */
 
     generateBets();
-
-
-    /*
-       Start random winners
-    */
-
-    addRandomWinner();
 
 }

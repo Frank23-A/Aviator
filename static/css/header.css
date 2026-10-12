@@ -24,6 +24,17 @@ body {
 }
 
 /* =========================================================
+   HEADER THEME WRAPPER
+========================================================= */
+
+#siteHeader {
+    width: 100%;
+    background: #121d29;
+    color: #ffffff;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* =========================================================
    MAIN HEADER
 ========================================================= */
 
@@ -419,52 +430,54 @@ body {
 }
 
 /* =========================================================
-   LIGHT MODE
+   LIGHT MODE — HEADER SECTION ONLY
+   DOES NOT CHANGE THE BODY OR DASHBOARD
 ========================================================= */
 
-body.light-mode {
-    background: #f4f4f4;
-}
-
-body.light-mode .header,
-body.light-mode .below-header {
+#siteHeader.light-mode {
     background: #ffffff;
     color: #111111;
 }
 
-body.light-mode .hamburger span {
+#siteHeader.light-mode .header,
+#siteHeader.light-mode .below-header {
+    background: #ffffff;
+    color: #111111;
+}
+
+#siteHeader.light-mode .hamburger span {
     background: #222222;
 }
 
-body.light-mode .right-item {
+#siteHeader.light-mode .right-item {
     color: #222222;
 }
 
-body.light-mode .right-item:hover {
+#siteHeader.light-mode .right-item:hover {
     color: #000000;
 }
 
-body.light-mode .nav-item {
+#siteHeader.light-mode .nav-item {
     color: #555f69;
 }
 
-body.light-mode .nav-item:hover {
+#siteHeader.light-mode .nav-item:hover {
     color: #111111;
 }
 
-body.light-mode .print-matches {
+#siteHeader.light-mode .print-matches {
     color: #555f69;
 }
 
-body.light-mode .print-matches:hover {
+#siteHeader.light-mode .print-matches:hover {
     color: #111111;
 }
 
-body.light-mode .search {
+#siteHeader.light-mode .search {
     color: #222222;
 }
 
-body.light-mode .theme-button {
+#siteHeader.light-mode .theme-button {
     color: #222222;
 }
 

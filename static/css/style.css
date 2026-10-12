@@ -1,3 +1,4 @@
+
 /* =========================================================
    BODY / PAGE
    Main page layout for the Aviator application.
@@ -137,7 +138,7 @@ body.light-mode {
 
 .dashboard-layout {
     width: 100%;
-    height: calc(100dvh - 38px);
+    height: calc(80dvh - 38px);
     min-height: 0;
     margin: 0;
     padding: 7px 5px 9px 4px;
