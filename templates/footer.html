@@ -1,186 +1,83 @@
 
-<!DOCTYPE html>
-<html lang="en">
+<!-- =========================================================
+     FOOTER
+========================================================= -->
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Betika Footer</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css', v='rays-only-during-flight') }}">
+<footer class="site-footer" id="siteFooter">
 
-</head>
+    <div class="site-footer-inner">
 
+        <!-- BACK TO TOP -->
+        <a href="#" class="footer-back-top" id="footerBackTop">
+            ↑ Back to Top
+        </a>
 
-<body>
+        <!-- FOOTER CONTENT -->
+        <div class="footer-content">
 
+            <!-- BRAND -->
+            <div class="footer-brand">
+                <a href="/" class="footer-logo">
+                    Betika!
+                    <span>.com</span>
+                </a>
+            </div>
 
-    <!-- =========================================================
-         FOOTER
-    ========================================================= -->
+            <!-- LEARN MORE -->
+            <div class="footer-column">
+                <h3>Learn More</h3>
+                <a href="#">Terms &amp; Conditions</a>
+                <a href="#">Responsible Gaming Policy</a>
+                <a href="#">Privacy policy</a>
+            </div>
 
-    <footer class="site-footer" id="siteFooter">
+            <!-- PLAY -->
+            <div class="footer-column">
+                <h3>Play</h3>
+                <a href="#">Sports</a>
+                <a href="#">Jackpots</a>
+                <a href="#">Virtuals</a>
+                <a href="#">Casino</a>
+            </div>
 
-        <div class="site-footer-inner">
+            <!-- CONTACT -->
+            <div class="footer-column">
+                <h3>Contact Us</h3>
 
+                <p class="footer-contact-label">Telephone</p>
+                <p>+254729290290</p>
 
-            <!-- =================================================
-                 BACK TO TOP
-            ================================================= -->
+                <p class="footer-contact-label">Email</p>
+                <p>support@betika.com</p>
 
-            <a
-                href="#"
-                class="footer-back-top"
-                id="footerBackTop"
-            >
-                ↑ Back to Top
-            </a>
-
-
-            <!-- =================================================
-                 FOOTER CONTENT
-            ================================================= -->
-
-            <div class="footer-content">
-
-
-                <!-- =================================================
-                     BRAND
-                ================================================= -->
-
-                <div class="footer-brand">
-
-                    <a
-                        href="/"
-                        class="footer-logo"
-                    >
-                        Betika!
-                        <span>.com</span>
-                    </a>
-
-                </div>
-
-
-                <!-- =================================================
-                     LEARN MORE
-                ================================================= -->
-
-                <div class="footer-column">
-
-                    <h3>Learn More</h3>
-
-                    <a href="#">
-                        Terms &amp; Conditions
-                    </a>
-
-                    <a href="#">
-                        Responsible Gaming Policy
-                    </a>
-
-                    <a href="#">
-                        Privacy policy
-                    </a>
-
-                </div>
-
-
-                <!-- =================================================
-                     PLAY
-                ================================================= -->
-
-                <div class="footer-column">
-
-                    <h3>Play</h3>
-                    <a href="#">Sports</a>
-                    <a href="#">Jackpots</a>
-                    <a href="#">Virtuals</a>
-                    <a href="#"> Casino</a>
-
-                </div>
-
-
-                <!-- =================================================
-                     CONTACT
-                ================================================= -->
-
-                <div class="footer-column">
-
-                    <h3>Contact Us</h3>
-
-
-                    <p class="footer-contact-label">
-                        Telephone
-                    </p>
-
-                    <p>
-                        +254729290290
-                    </p>
-
-
-                    <p class="footer-contact-label">
-                        Email
-                    </p>
-
-                    <p>
-                        support@betika.com
-                    </p>
-
-
-                    <p class="footer-contact-label">
-                        Office Address
-                    </p>
-
-                    <p>
-                        Mayfair Business Centre, 3rd Floor,
-                        off Parklands Road.
-                    </p>
-
-                </div>
-
+                <p class="footer-contact-label">Office Address</p>
+                <p>
+                    Mayfair Business Centre, 3rd Floor,
+                    off Parklands Road.
+                </p>
             </div>
 
         </div>
+    </div>
 
-    </footer>
+</footer>
 
+<!-- FOOTER JAVASCRIPT -->
+<script>
+(function () {
+    const footerBackTop = document.getElementById("footerBackTop");
 
-    <!-- =========================================================
-         FOOTER JAVASCRIPT
-    ========================================================= -->
+    if (footerBackTop && !footerBackTop.dataset.initialized) {
+        footerBackTop.dataset.initialized = "true";
 
-    <script>
+        footerBackTop.addEventListener("click", function (event) {
+            event.preventDefault();
 
-        document.addEventListener(
-            "DOMContentLoaded",
-            function () {
-
-                const footerBackTop =
-                    document.getElementById("footerBackTop");
-
-
-                if (footerBackTop) {
-
-                    footerBackTop.addEventListener(
-                        "click",
-                        function (event) {
-
-                            event.preventDefault();
-
-                            window.scrollTo({
-                                top: 0,
-                                behavior: "smooth"
-                            });
-
-                        }
-                    );
-
-                }
-
-            }
-        );
-
-    </script>
-
-
-</body>
-
-</html>
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        });
+    }
+})();
+</script>

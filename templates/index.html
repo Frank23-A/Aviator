@@ -5,6 +5,10 @@
 <title>Aviator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='rays-only-during-flight') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+
+
 </head>
 
 <body>
@@ -110,19 +114,23 @@
     
     <aside class="side-menu" id="sideMenu">
 
-    <!-- PROFILE -->
+             <!-- PROFILE -->
     <div class="profile-section">
         <div class="avatar"> ◉</div>
         <div class="user-info">
             <div class="user-number"> 254757XXX052</div>
         </div>
-        <button class="change-avatar" type="button"> ◯ Change<br> Avatar </button>
+        <button class="change-avatar" type="button">             
+            <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; stroke: currentColor;fill:none;">
+                    <circle cx="12" cy="12" r="11"></circle>
+                    <circle cx="12" cy="8" r="3"></circle>
+                    <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"></path>
+            </svg>
+            Change<br> Avatar </button>
     </div>
 
 
-    <!-- =====================================
-         SETTINGS
-    ====================================== -->
+    <!-- =====    SETTINGS     ==== -->
 
     <div class="settings-section">
 
@@ -217,9 +225,7 @@
     </div>
 
 
-    <!-- =====================================
-         HOME
-    ====================================== -->
+    <!-- ====  HOME  ==== -->
 
     <div class="home-item" id="homeButton">
         <svg viewBox="0 0 24 24">
@@ -233,24 +239,20 @@
 
 </main>
 
+{% include 'footer.html' %}
 
-<!-- =========================================
-     MENU OVERLAY
-========================================= -->
+<!-- ==== MENU OVERLAY ==== -->
 
 <div class="menu-overlay" id="menuOverlay"></div>
 
 
-<!-- =========================================
-     RIGHT SIDE MENU
-========================================= -->
-
-
+<!-- ==== RIGHT SIDE MENU  ==== -->
 
 <script src="{{ url_for('static', filename='js/aviator.js', v='no-dance-transition-oscillation') }}"></script>
 <script src="{{ url_for('static', filename='js/sidemenu.js') }}"></script>
 <script src="{{ url_for('static', filename='js/betlist.js') }}"></script>
 <script src="{{ url_for('static', filename='js/previous.js') }}"></script>
+<script src="{{ url_for('static', filename='js/header.js') }}"></script>
 
 </body>
 </html>

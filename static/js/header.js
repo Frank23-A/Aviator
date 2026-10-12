@@ -42,6 +42,7 @@ function toggleTheme() {
                         A6.7 6.7 0 0 0
                         21 12.8Z
                     "
+                    fill="currentColor"
                 ></path>
 
             </svg>
@@ -75,6 +76,7 @@ function toggleTheme() {
                     cx="12"
                     cy="12"
                     r="4"
+                    fill="currentColor"
                 ></circle>
 
                 <line
