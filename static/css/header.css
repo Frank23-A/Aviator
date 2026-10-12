@@ -31,21 +31,13 @@ body {
 .header {
 
     width: 100%;
-
     min-height: 100px;
-
     background: #121d29;
-
     color: white;
-
     position: relative;
-
     border: none !important;
-
     outline: none !important;
-
     box-shadow: none !important;
-
     transition:
         background 0.3s ease,
         color 0.3s ease;

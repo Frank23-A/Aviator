@@ -10,13 +10,13 @@
 <body>
 {% include 'header.html' %}
 
-<header class="top-bar">
-    <div class="top-logo"><span class="aviator-icon">Aviator</span></div>
-    <div class="top-bar-spacer"></div>
-    <div class="header-balance"><strong id="headerBalance">{{ '{:,.2f}'.format(user.balance) }}</strong><span>USD</span></div>
+<div class="bar">
+    <div class="bar-logo"><span class="aviator-icon">Aviator</span></div>
+    <div class="bar-spacer"></div>
+    <div class="balance"><strong id="headerBalance">{{ '{:,.2f}'.format(user.balance) }}</strong><span>USD</span></div>
     <button class="menu-button" id="menuButton" type="button" aria-label="Open menu">☰</button>
    
-</header>
+</div>
 
 <main class="dashboard-layout">
     <aside class="live-bets-panel">
@@ -90,6 +90,7 @@
         </div>
 
         <div class="bottom-cards">
+            
             <section class="bottom-card" aria-label="First bet control">
                 <div class="bet-adjuster">
                     <div class="stake-control"><button type="button" data-adjust="-1" aria-label="Decrease bet">−</button><strong class="stake-value">1.00</strong><button type="button" data-adjust="1" aria-label="Increase bet">+</button></div>
@@ -127,6 +128,7 @@
 
         <!-- SOUND -->
         <div class="setting-row">
+
            <svg viewBox="0 0 24 24">
                 <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
                 <path d="M16 8c1.5 1 2 2 2 4s-.5 3-2 4"></path>
@@ -135,6 +137,7 @@
             <div class="toggle" data-setting="sound">
                 <div class="toggle-circle"></div>
             </div>
+
         </div>
 
 
@@ -147,15 +150,10 @@
                 <circle cx="6" cy="18" r="3"></circle>
                <circle cx="17" cy="16" r="3"></circle>
             </svg>
-
-            <div class="setting-name">
-                Music
-            </div>
+            <div class="setting-name"> Music </div>
 
             <div class="toggle active" data-setting="music">
-
                 <div class="toggle-circle"></div>
-
             </div>
 
         </div>
@@ -164,123 +162,58 @@
         <!-- ANIMATION -->
 
         <div class="setting-row">
-
-            <div class="setting-icon">
-                ♧
-            </div>
-
-            <div class="setting-name">
-                Animation
-            </div>
-
+            <div class="setting-icon"> ♧ </div>
+            <div class="setting-name"> Animation</div>
             <div class="toggle active" data-setting="animation">
-
                 <div class="toggle-circle"></div>
-
             </div>
-
         </div>
 
     </div>
 
 
     <!-- DIVIDER -->
-
     <div class="menu-divider"></div>
 
 
-    <!-- =====================================
-         MENU ITEMS
-    ====================================== -->
+    <!-- === MENU ITEMS ==== -->
 
     <div class="menu-item">
-
-        <div class="menu-item-icon">
-            ☆
-        </div>
-
-        <div class="menu-item-text">
-            Free Bets
-        </div>
-
+        <div class="menu-item-icon">☆</div>
+        <div class="menu-item-text"> Free Bets</div>
     </div>
 
 
     <div class="menu-item">
-
-        <div class="menu-item-icon">
-            ◷
-        </div>
-
-        <div class="menu-item-text">
-            My Bet History
-        </div>
-
+        <div class="menu-item-icon">◷</div>
+        <div class="menu-item-text">My Bet History</div>
     </div>
 
 
     <div class="menu-item">
+        <div class="menu-item-icon">▣</div>
+        <div class="menu-item-text">Game Limits</div>
+    </div>
 
-        <div class="menu-item-icon">
-            ▣
-        </div>
-
-        <div class="menu-item-text">
-            Game Limits
-        </div>
-
+    <div class="menu-item">
+        <div class="menu-item-icon">?</div>
+        <div class="menu-item-text"> How To Play</div>
     </div>
 
 
     <div class="menu-item">
-
-        <div class="menu-item-icon">
-            ?
-        </div>
-
-        <div class="menu-item-text">
-            How To Play
-        </div>
-
+        <div class="menu-item-icon">▤</div>
+        <div class="menu-item-text">Game Rules</div>
     </div>
 
-
     <div class="menu-item">
-
-        <div class="menu-item-icon">
-            ▤
-        </div>
-
-        <div class="menu-item-text">
-            Game Rules
-        </div>
-
+        <div class="menu-item-icon"> ♢ </div>
+        <div class="menu-item-text"> Provably Fair Settings</div>
     </div>
 
-
     <div class="menu-item">
-
-        <div class="menu-item-icon">
-            ♢
-        </div>
-
-        <div class="menu-item-text">
-            Provably Fair Settings
-        </div>
-
-    </div>
-
-
-    <div class="menu-item">
-
-        <div class="menu-item-icon">
-            ▤
-        </div>
-
-        <div class="menu-item-text">
-            Game Room: Room #3
-        </div>
-
+        <div class="menu-item-icon">▤</div>
+        <div class="menu-item-text"> Game Room: Room #3</div>
     </div>
 
 
@@ -289,18 +222,15 @@
     ====================================== -->
 
     <div class="home-item" id="homeButton">
-
         <svg viewBox="0 0 24 24">
             <path d="M3 10.5L12 3l9 7.5"></path>
             <path d="M5 9.5V21h14V9.5"></path>
             <path d="M9 21v-7h6v7"></path>
         </svg>
-
         <span>Home</span>
-
     </div>
-
 </aside>
+
 </main>
 
 
@@ -322,115 +252,5 @@
 <script src="{{ url_for('static', filename='js/betlist.js') }}"></script>
 <script src="{{ url_for('static', filename='js/previous.js') }}"></script>
 
-<!-- =========================================
-     FOOTER CONTAINER
-========================================= -->
-
-
-
-<script>
-    document.getElementById('logoutButton').addEventListener('click', function () {
-        fetch('/logout', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'}
-        })
-        .then(() => {
-            window.location.href = '/login';
-        })
-        .catch(() => {
-            window.location.href = '/login';
-        });
-    });
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    const footerContainer =
-        document.getElementById("footerContainer");
-
-    if (!footerContainer) {
-        return;
-    }
-
-    fetch("/footer")
-        .then(function (response) {
-
-            if (!response.ok) {
-                throw new Error("Failed to load footer");
-            }
-
-            return response.text();
-        })
-        .then(function (html) {
-
-            /*
-             * footer.html is a complete HTML document.
-             * Extract only its body content so that we don't
-             * create a second <html>, <head> or <body>.
-             */
-            const parser = new DOMParser();
-
-            const footerDocument =
-                parser.parseFromString(html, "text/html");
-
-            footerContainer.innerHTML =
-                footerDocument.body.innerHTML;
-
-
-            /*
-             * Copy footer styles from footer.html
-             * into the current page.
-             */
-            footerDocument.querySelectorAll("style").forEach(
-                function (style) {
-
-                    const newStyle =
-                        document.createElement("style");
-
-                    newStyle.textContent =
-                        style.textContent;
-
-                    document.head.appendChild(newStyle);
-
-                }
-            );
-
-
-            /*
-             * Run the Back To Top functionality.
-             */
-            const footerBackTop =
-                document.getElementById("footerBackTop");
-
-            if (footerBackTop) {
-
-                footerBackTop.addEventListener(
-                    "click",
-                    function (event) {
-
-                        event.preventDefault();
-
-                        window.scrollTo({
-                            top: 0,
-                            behavior: "smooth"
-                        });
-
-                    }
-                );
-
-            }
-
-        })
-        .catch(function (error) {
-
-            console.error(
-                "Footer loading error:",
-                error
-            );
-
-        });
-
-});
-</script>
 </body>
 </html>
