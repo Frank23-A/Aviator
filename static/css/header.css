@@ -323,7 +323,7 @@ body {
 ========================================================= */
 
 .search {
-    margin-left: 5px;
+    margin-left: 3px;
     display: flex;
     align-items: center;
     gap: 9px;
@@ -1086,5 +1086,454 @@ body {
 
     .deposit-methods {
         grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE HEADER FIT — PHONE SCREENS ONLY
+   Preserves the existing colours, fonts, icons and styling.
+   Allows header content to shrink/wrap instead of overlapping.
+========================================================= */
+@media (max-width: 800px) {
+    #siteHeader,
+    #siteHeader .header,
+    #siteHeader .top-row,
+    #siteHeader .bottom-row {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    #siteHeader .top-row {
+        flex-wrap: wrap;
+        height: auto;
+        min-height: 52px;
+        row-gap: 4px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    #siteHeader .logo {
+        flex: 0 1 auto;
+        margin-right: auto;
+        font-size: clamp(17px, 5vw, 23px);
+        letter-spacing: -1px;
+    }
+
+    #siteHeader .right-menu {
+        flex: 0 1 auto;
+        max-width: 100%;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: clamp(4px, 1.5vw, 8px);
+        font-size: clamp(10px, 2.8vw, 12px);
+    }
+
+    #siteHeader .right-item {
+        gap: 4px;
+        font-size: inherit;
+    }
+
+    #siteHeader .right-item .text {
+        display: inline;
+    }
+
+    #siteHeader .right-item svg {
+        width: clamp(14px, 4vw, 18px);
+        height: clamp(14px, 4vw, 18px);
+    }
+
+    #siteHeader .deposit {
+        padding: 5px clamp(6px, 2vw, 10px);
+        font-size: clamp(9px, 2.6vw, 11px);
+    }
+
+    #siteHeader .theme-button {
+        width: 24px;
+        height: 24px;
+        flex: 0 0 24px;
+    }
+
+    #siteHeader .theme-button svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    #siteHeader .bottom-row {
+        height: auto;
+        min-height: 40px;
+        padding: 6px 8px;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: center;
+        align-items: center;
+        gap: 7px 11px;
+        overflow: visible;
+        white-space: normal;
+    }
+
+    #siteHeader .nav-item,
+    #siteHeader .print-matches,
+    #siteHeader .search {
+        max-width: 100%;
+        font-size: clamp(10px, 2.8vw, 12px);
+        white-space: nowrap;
+        margin-left: 0;
+        padding-right: 0;
+    }
+
+    #siteHeader .new {
+        top: -11px;
+    }
+
+    #siteHeader .below-header {
+        min-width: 0;
+        max-width: 100%;
+        height: auto;
+        min-height: 32px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 380px) {
+    #siteHeader .top-row {
+        column-gap: 4px;
+    }
+
+    #siteHeader .logo {
+        font-size: 17px;
+        letter-spacing: -0.8px;
+    }
+
+    #siteHeader .right-menu {
+        gap: 4px;
+    }
+
+    #siteHeader .right-item {
+        gap: 3px;
+    }
+
+    #siteHeader .right-item .text {
+        font-size: 9px;
+    }
+
+    #siteHeader .bottom-row {
+        gap: 7px 9px;
+    }
+}
+
+/* =========================================================
+   DEPOSIT POPUP RESPONSIVE SIZE FIX
+   Keeps the existing design and colors while making the
+   popup slightly more compact and fitting it to the screen.
+========================================================= */
+.deposit-overlay {
+    padding: 12px;
+    overflow-y: auto;
+}
+
+.deposit-modal {
+    width: min(510px, calc(100vw - 28px));
+    max-width: 100%;
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    padding: 52px 20px 28px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.deposit-card {
+    padding: 22px 13px 14px;
+}
+
+.deposit-card-title {
+    margin-bottom: 12px;
+    font-size: 16px;
+}
+
+.deposit-card-subtitle {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.deposit-amount-box {
+    height: 50px;
+}
+
+.deposit-quick-buttons {
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.deposit-quick-btn {
+    height: 35px;
+}
+
+.deposit-methods {
+    gap: 7px;
+}
+
+.deposit-method {
+    height: 35px;
+}
+
+@media (max-width: 600px) {
+    .deposit-overlay {
+        padding: 8px;
+        align-items: center;
+    }
+
+    .deposit-modal {
+        width: calc(100vw - 16px);
+        max-height: calc(100vh - 16px);
+        max-height: calc(100dvh - 16px);
+        padding: 46px 12px 16px;
+        border-radius: 14px;
+    }
+
+    .deposit-close {
+        top: 10px;
+        right: 12px;
+        width: 28px;
+        height: 28px;
+        font-size: 30px;
+    }
+
+    .deposit-card {
+        padding: 18px 9px 12px;
+    }
+
+    .deposit-card-title {
+        font-size: 15px;
+        margin-bottom: 10px;
+    }
+
+    .deposit-card-subtitle,
+    .deposit-note {
+        font-size: 12px;
+    }
+
+    .deposit-amount-box {
+        height: 44px;
+    }
+
+    .deposit-amount-btn {
+        width: 42px;
+        font-size: 18px;
+    }
+
+    .deposit-amount-input {
+        font-size: 14px;
+    }
+
+    .deposit-quick-buttons {
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    .deposit-quick-btn {
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .deposit-methods {
+        gap: 6px;
+    }
+
+    .deposit-method {
+        height: 33px;
+        font-size: 10px;
+    }
+
+    .deposit-method-icon {
+        margin-right: 3px;
+        font-size: 14px;
+    }
+
+    .deposit-tax {
+        margin-top: 7px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 390px) {
+    .deposit-modal {
+        padding: 42px 9px 12px;
+    }
+
+    .deposit-card {
+        padding: 15px 7px 10px;
+    }
+
+    .deposit-quick-buttons {
+        gap: 5px;
+    }
+
+    .deposit-quick-btn {
+        font-size: 11px;
+    }
+}
+
+@media (max-height: 520px) {
+    .deposit-overlay {
+        align-items: flex-start;
+    }
+
+    .deposit-modal {
+        margin: auto 0;
+        max-height: calc(100vh - 16px);
+        max-height: calc(100dvh - 16px);
+        padding-top: 42px;
+    }
+}
+
+/* =========================================================
+   DEPOSIT POPUP — EXTRA COMPACT SIZE ADJUSTMENT
+   Further reduces width and height without changing the
+   existing colors, fonts, or visual styling.
+========================================================= */
+.deposit-modal {
+    width: min(460px, calc(100vw - 40px));
+    max-height: min(76vh, 620px);
+    max-height: min(76dvh, 620px);
+    padding: 42px 16px 20px;
+}
+
+.deposit-card {
+    padding: 16px 11px 10px;
+}
+
+.deposit-card-title {
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+.deposit-card-subtitle {
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.deposit-amount-box {
+    height: 40px;
+}
+
+.deposit-amount-btn {
+    width: 38px;
+}
+
+.deposit-quick-buttons {
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.deposit-quick-btn {
+    height: 29px;
+    font-size: 11px;
+}
+
+.deposit-methods {
+    gap: 6px;
+}
+
+.deposit-method {
+    height: 30px;
+}
+
+.deposit-tax {
+    margin-top: 6px;
+    font-size: 12px;
+}
+
+@media (max-width: 600px) {
+    .deposit-overlay {
+        padding: 10px 16px;
+    }
+
+    .deposit-modal {
+        width: calc(100vw - 40px);
+        max-height: 74vh;
+        max-height: 74dvh;
+        padding: 38px 9px 10px;
+        border-radius: 12px;
+    }
+
+    .deposit-close {
+        top: 7px;
+        right: 9px;
+        width: 25px;
+        height: 25px;
+        font-size: 27px;
+    }
+
+    .deposit-card {
+        padding: 13px 7px 8px;
+    }
+
+    .deposit-card-title {
+        font-size: 14px;
+        margin-bottom: 7px;
+    }
+
+    .deposit-card-subtitle,
+    .deposit-note {
+        font-size: 11px;
+        margin-bottom: 7px;
+    }
+
+    .deposit-amount-box {
+        height: 36px;
+    }
+
+    .deposit-amount-btn {
+        width: 34px;
+        font-size: 16px;
+    }
+
+    .deposit-amount-input {
+        font-size: 13px;
+    }
+
+    .deposit-quick-buttons {
+        gap: 5px;
+        margin-bottom: 7px;
+    }
+
+    .deposit-quick-btn {
+        height: 27px;
+        font-size: 10px;
+    }
+
+    .deposit-method {
+        height: 28px;
+        font-size: 9px;
+    }
+
+    .deposit-method-icon {
+        font-size: 12px;
+        margin-right: 2px;
+    }
+
+    .deposit-tax {
+        margin-top: 5px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 390px) {
+    .deposit-overlay {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .deposit-modal {
+        width: calc(100vw - 48px);
+        max-height: 72vh;
+        max-height: 72dvh;
+        padding: 35px 7px 8px;
+    }
+
+    .deposit-card {
+        padding: 11px 6px 7px;
     }
 }
