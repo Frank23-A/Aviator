@@ -1,0 +1,705 @@
+* {
+    box-sizing: border-box;
+}
+
+.profile-page {
+    min-height: 100vh;
+    margin: 0;
+    background: #1b2733;
+    color: #f4f6f8;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.profile-dashboard {
+    width: min(710px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 15px 0 44px;
+}
+
+.profile-identity {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 0 0 11px;
+}
+
+.profile-avatar {
+    width: 43px;
+    height: 43px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #5a9d19;
+    color: #fff;
+}
+
+.profile-avatar svg {
+    width: 21px;
+    height: 21px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.profile-identity-copy {
+    display: grid;
+    gap: 3px;
+    font-size: 13px;
+}
+
+.profile-identity-copy span {
+    color: #aeb8c4;
+    font-size: 11px;
+}
+
+.profile-phone-edit {
+    padding: 5px 8px;
+    border: 1px solid #52616d;
+    border-radius: 5px;
+    background: transparent;
+    color: #e6edf2;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.profile-phone-edit:hover {
+    background: #27343f;
+}
+
+.profile-phone-form {
+    width: min(430px, 100%);
+    margin: 0 auto 14px;
+    padding: 11px 13px;
+    border-radius: 7px;
+    background: #27343f;
+}
+
+.profile-phone-form[hidden] {
+    display: none;
+}
+
+.profile-phone-form label {
+    display: block;
+    margin-bottom: 7px;
+    color: #aeb8c4;
+    font-size: 11px;
+}
+
+.profile-phone-form-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+}
+
+.profile-phone-form-row input {
+    min-width: 0;
+    height: 35px;
+    padding: 0 10px;
+    border: 1px solid #44525e;
+    border-radius: 5px;
+    outline-color: #76a9d4;
+    background: #1b2733;
+    color: #f4f6f8;
+}
+
+.profile-phone-form-row button {
+    padding: 0 14px;
+    border: 0;
+    border-radius: 5px;
+    background: #5a9d19;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.profile-panel {
+    border-radius: 8px;
+    background: #27343f;
+}
+
+.profile-balance {
+    min-height: 61px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 15px;
+    margin-bottom: 14px;
+}
+
+.balance-item {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.balance-item svg {
+    width: 21px;
+    height: 21px;
+    flex: 0 0 auto;
+    fill: none;
+    stroke: #f4f6f8;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.balance-item span {
+    display: grid;
+    gap: 3px;
+}
+
+.balance-item small {
+    color: #aeb8c4;
+    font-size: 11px;
+}
+
+.balance-item strong {
+    font-size: 13px;
+}
+
+.bonus-item {
+    margin-right: 19px;
+}
+
+.profile-offers {
+    min-height: 73px;
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 14px;
+    margin-bottom: 14px;
+}
+
+.offer-item {
+    display: grid;
+    justify-items: start;
+    gap: 7px;
+}
+
+.offer-item strong {
+    font-size: 13px;
+}
+
+.offer-item a {
+    min-height: 26px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 15px;
+    border-radius: 7px;
+    background: #e4eed6;
+    color: #365122;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.offer-divider {
+    width: 1px;
+    height: 18px;
+    background: #65717a;
+}
+
+.wallet-panel {
+    padding: 14px;
+    margin-bottom: 14px;
+}
+
+.wallet-panel h1,
+.wallet-panel h2 {
+    margin: 0 0 5px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.panel-subtitle,
+.profile-help {
+    margin: 0;
+    color: #aeb8c4;
+    font-size: 12px;
+}
+
+.profile-amount-box {
+    height: 53px;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 42px;
+    align-items: center;
+    margin-top: 13px;
+    border-radius: 8px;
+    background: #1b2733;
+}
+
+.profile-amount-box button {
+    height: 100%;
+    border: 0;
+    background: transparent;
+    color: #f4f6f8;
+    font-size: 19px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.profile-amount-box input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #f4f6f8;
+    font: inherit;
+    font-size: 13px;
+    text-align: center;
+}
+
+.profile-amount-box input::placeholder {
+    color: #aeb8c4;
+    opacity: 1;
+}
+
+.profile-amount-box input::-webkit-inner-spin-button,
+.profile-amount-box input::-webkit-outer-spin-button {
+    margin: 0;
+    appearance: none;
+}
+
+.profile-amount-box input[type="number"] {
+    appearance: textfield;
+}
+
+.profile-help {
+    margin-top: 6px;
+}
+
+.profile-quick-amounts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 9px;
+}
+
+.profile-quick-amounts button {
+    min-height: 35px;
+    border: 0;
+    border-radius: 22px;
+    background: #344d60;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.profile-quick-amounts button:hover {
+    background: #42617a;
+}
+
+.profile-payment-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 11px;
+}
+
+.profile-payment-methods button {
+    min-height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 0;
+    border-radius: 7px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.profile-payment-methods button svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.profile-cashia {
+    background: #df1761;
+}
+
+.profile-mpesa {
+    background: #4c761c;
+}
+
+.profile-payment-methods button:hover {
+    filter: brightness(1.1);
+}
+
+.profile-promo-note {
+    margin: 8px 0 0;
+    color: #f12468;
+    font-size: 11px;
+}
+
+.profile-status {
+    min-height: 0;
+    margin: 5px 0 0;
+    color: #ffd46b;
+    font-size: 12px;
+}
+
+.profile-status:empty {
+    display: none;
+}
+
+.withdraw-panel {
+    padding: 17px 18px;
+}
+
+.withdraw-panel .profile-amount-box {
+    margin-top: 13px;
+}
+
+.withdraw-mpesa {
+    background: #e4eed6;
+    color: #365122 !important;
+}
+
+.profile-row-button {
+    width: 100%;
+    min-height: 72px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 17px;
+    border: 0;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.row-leading-icon {
+    color: #5a9d19;
+    font-size: 19px;
+}
+
+.profile-row-copy {
+    display: grid;
+    gap: 4px;
+}
+
+.profile-row-copy strong {
+    font-size: 14px;
+}
+
+.profile-row-copy small {
+    color: #aeb8c4;
+    font-size: 12px;
+}
+
+.row-chevron {
+    margin-left: auto;
+    color: #87929c;
+    font-size: 26px;
+    line-height: 1;
+}
+
+.transactions-empty {
+    padding: 12px 17px;
+    color: #aeb8c4;
+    font-size: 12px;
+}
+
+.profile-section-title {
+    margin: 18px 18px 5px;
+    font-size: 14px;
+}
+
+.profile-section-caption {
+    margin: 0 18px 18px;
+    color: #aeb8c4;
+    font-size: 12px;
+}
+
+.preferences-panel {
+    padding: 14px 18px;
+}
+
+.preference-setting {
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    gap: 12px;
+}
+
+.preference-setting > span:first-child {
+    display: grid;
+    gap: 4px;
+}
+
+.preference-setting strong {
+    font-size: 14px;
+}
+
+.preference-setting small {
+    color: #aeb8c4;
+    font-size: 12px;
+}
+
+button.preference-setting {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.preference-icon {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffb500;
+}
+
+.preference-icon svg {
+    width: 25px;
+    height: 25px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.data-saver-setting input {
+    position: absolute;
+    right: 0;
+    width: 44px;
+    height: 25px;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.profile-switch {
+    width: 44px;
+    height: 24px;
+    position: relative;
+    margin-left: auto;
+    border-radius: 20px;
+    background: #77818a;
+    transition: background 0.2s ease;
+}
+
+.profile-switch::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #e7e9eb;
+    transition: transform 0.2s ease;
+}
+
+.data-saver-setting input:checked + .profile-switch {
+    background: #5a9d19;
+}
+
+.data-saver-setting input:checked + .profile-switch::after {
+    transform: translateX(20px);
+}
+
+.data-saver-setting input:focus-visible + .profile-switch {
+    outline: 2px solid #e4eed6;
+    outline-offset: 2px;
+}
+
+.other-info-title {
+    margin-top: 19px;
+}
+
+.support-panel {
+    padding: 17px 18px 0;
+}
+
+.support-panel h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+}
+
+.support-row {
+    width: 100%;
+    min-height: 66px;
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border: 0;
+    border-bottom: 1px solid rgb(174 184 196 / 14%);
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.support-row > span:first-child {
+    display: grid;
+    gap: 5px;
+}
+
+.support-row small {
+    color: #aeb8c4;
+    font-size: 12px;
+}
+
+.support-row strong {
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.support-row .row-chevron {
+    margin-right: 2px;
+}
+
+.support-status {
+    padding-top: 6px;
+}
+
+.signout-link {
+    display: block;
+    width: fit-content;
+    margin-top: 13px;
+    padding: 6px 0;
+    color: #5a9d19;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.signout-link:hover {
+    color: #85c43d;
+}
+
+.profile-version {
+    width: min(180px, 55%);
+    margin: 12px auto 0;
+    padding: 15px 0 18px;
+    border-top: 1px solid rgb(174 184 196 / 14%);
+    color: #aeb8c4;
+    font-size: 10px;
+    text-align: center;
+}
+
+@media (max-width: 560px) {
+    .profile-dashboard {
+        width: calc(100% - 20px);
+        padding-top: 12px;
+    }
+
+    .profile-balance,
+    .profile-offers {
+        padding-right: 11px;
+        padding-left: 11px;
+    }
+
+    .bonus-item {
+        margin-right: 0;
+    }
+
+    .profile-offers {
+        gap: 8px;
+    }
+
+    .offer-item strong {
+        font-size: 11px;
+    }
+
+    .profile-quick-amounts {
+        gap: 6px;
+    }
+
+    .profile-payment-methods {
+        gap: 6px;
+    }
+
+    .profile-payment-methods button {
+        padding: 0 5px;
+        font-size: 10px;
+    }
+}
+
+/* On Profile, the shared theme control also themes the page body and cards. */
+.profile-page.profile-light-mode {
+    background: #f1f3f5;
+    color: #26323d;
+}
+
+.profile-page.profile-light-mode .profile-panel,
+.profile-page.profile-light-mode .profile-phone-form {
+    background: #fff;
+    box-shadow: 0 1px 5px rgb(24 38 50 / 10%);
+}
+
+.profile-page.profile-light-mode .profile-identity-copy span,
+.profile-page.profile-light-mode .panel-subtitle,
+.profile-page.profile-light-mode .profile-help,
+.profile-page.profile-light-mode .profile-row-copy small,
+.profile-page.profile-light-mode .profile-section-caption,
+.profile-page.profile-light-mode .preference-setting small,
+.profile-page.profile-light-mode .support-row small,
+.profile-page.profile-light-mode .transactions-empty,
+.profile-page.profile-light-mode .profile-version {
+    color: #65717b;
+}
+
+.profile-page.profile-light-mode .profile-amount-box,
+.profile-page.profile-light-mode .profile-phone-form-row input {
+    background: #edf1f4;
+    color: #26323d;
+}
+
+.profile-page.profile-light-mode .profile-amount-box input {
+    color: #26323d;
+}
+
+.profile-page.profile-light-mode .profile-amount-box input::placeholder {
+    color: #737f89;
+}
+
+.profile-page.profile-light-mode .profile-amount-box button,
+.profile-page.profile-light-mode .profile-phone-edit,
+.profile-page.profile-light-mode .profile-phone-form-row input,
+.profile-page.profile-light-mode .support-row,
+.profile-page.profile-light-mode button.preference-setting {
+    color: #26323d;
+}
+
+.profile-page.profile-light-mode .profile-phone-edit {
+    border-color: #c2cbd2;
+}
+
+.profile-page.profile-light-mode .profile-section-caption,
+.profile-page.profile-light-mode .support-panel h3,
+.profile-page.profile-light-mode .profile-section-title {
+    color: #26323d;
+}
+
+.profile-page.profile-light-mode .support-row,
+.profile-page.profile-light-mode .profile-version {
+    border-color: rgb(38 50 61 / 14%);
+}
+
+.profile-page.profile-light-mode .withdraw-mpesa {
+    color: #365122 !important;
+}

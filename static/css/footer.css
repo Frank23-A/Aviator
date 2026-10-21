@@ -94,6 +94,33 @@
     margin-bottom: 5px !important;
 }
 
+/* Footer theme follows the header toggle without changing the game screen. */
+.site-footer.light-mode {
+    background: #f1f3f5;
+    color: #3d4852;
+}
+
+.site-footer.light-mode .footer-back-top {
+    color: #35424e;
+}
+
+.site-footer.light-mode .footer-logo {
+    color: #d7b900;
+}
+
+.site-footer.light-mode .footer-column h3 {
+    color: #18232d;
+}
+
+.site-footer.light-mode .footer-column a,
+.site-footer.light-mode .footer-column p {
+    color: #4d5963;
+}
+
+.site-footer.light-mode .footer-contact-label {
+    color: #25313b !important;
+}
+
 @media (max-width: 700px) {
     .site-footer {
         min-height: 500px;

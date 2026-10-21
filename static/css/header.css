@@ -413,6 +413,25 @@ body {
     white-space: nowrap;
     display: flex;
     align-items: center;
+    gap: 6px;
+    position: relative;
+    z-index: 2147483647;
+}
+
+.fullscreen-icon {
+    flex: 0 0 18px;
+}
+
+.fullscreen-exit-icon {
+    display: none;
+}
+
+.fullscreen.is-active .fullscreen-enter-icon {
+    display: none;
+}
+
+.fullscreen.is-active .fullscreen-exit-icon {
+    display: block;
 }
 
 /* =========================================================
@@ -1087,6 +1106,53 @@ body {
     .deposit-methods {
         grid-template-columns: 1fr;
     }
+}
+
+.deposit-status {
+    min-height: 16px;
+    margin: 8px 0 0;
+    color: #c8d5df;
+    font-size: 12px;
+    line-height: 1.35;
+    text-align: center;
+}
+
+.deposit-success-modal {
+    width: min(420px, calc(100vw - 32px));
+    padding: 18px;
+}
+
+.deposit-success-card {
+    padding: 20px 14px 16px;
+    text-align: center;
+}
+
+.deposit-success-card .deposit-card-title {
+    margin-bottom: 10px;
+}
+
+.deposit-success-card .deposit-card-subtitle {
+    margin-bottom: 18px;
+}
+
+.deposit-success-ok {
+    min-width: 100px;
+    padding: 10px 22px;
+    border: 0;
+    border-radius: 8px;
+    background: #ffd400;
+    color: #111;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.deposit-success-ok:hover {
+    background: #ffe34d;
+}
+
+.deposit-method:disabled {
+    cursor: wait;
+    opacity: 0.65;
 }
 
 /* =========================================================

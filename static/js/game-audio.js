@@ -18,6 +18,7 @@
 
     // Music is enabled by default whenever the game page loads.
     let musicEnabled = true;
+    let playbackStarted = false;
 
     function updateMusicToggle() {
         document.querySelectorAll(MUSIC_SELECTOR).forEach(toggle => {
@@ -39,7 +40,9 @@
         audio.loop = true;
         try {
             await audio.play();
+            playbackStarted = true;
         } catch (error) {
+            playbackStarted = false;
             // Autoplay can be blocked until the visitor interacts with the
             // page. Keep the requested default-on state and retry then.
             updateMusicToggle();
@@ -53,12 +56,20 @@
     // Browsers may reject autoplay before a user gesture. Keep the switch on
     // and retry on the first interaction so music starts as soon as permitted.
     function resumeMusicAfterGesture() {
-        if (!musicEnabled || !audio.paused) return;
+        if (!musicEnabled || playbackStarted || !audio.paused) return;
         musicOn();
     }
 
-    document.addEventListener("pointerdown", resumeMusicAfterGesture);
-    document.addEventListener("keydown", resumeMusicAfterGesture);
+    document.addEventListener("pointerdown", event => {
+        // Let the Music switch handle its own click, otherwise a blocked
+        // autoplay retry and the toggle action could cancel each other.
+        if (event.target.closest(MUSIC_SELECTOR)) return;
+        resumeMusicAfterGesture();
+    });
+    document.addEventListener("keydown", event => {
+        if (event.target.closest(MUSIC_SELECTOR)) return;
+        resumeMusicAfterGesture();
+    });
 
     // If the file reaches its end, restart it while Music remains enabled.
     // The loop property normally handles this; this is a fallback for browsers
@@ -66,13 +77,17 @@
     audio.addEventListener("ended", () => {
         if (!musicEnabled) return;
         audio.currentTime = 0;
-        audio.play().catch(error => {
+        audio.play().then(() => {
+            playbackStarted = true;
+        }).catch(error => {
+            playbackStarted = false;
             console.warn("Unable to restart Aviator.mp3 after it ended.", error);
         });
     });
 
     function musicOff() {
         musicEnabled = false;
+        playbackStarted = false;
         audio.pause();
         audio.currentTime = 0;
         updateMusicToggle();
@@ -95,7 +110,7 @@
 
         event.preventDefault();
         event.stopImmediatePropagation();
-        if (musicEnabled) musicOff();
+        if (musicEnabled && playbackStarted) musicOff();
         else musicOn();
     }, true);
 
@@ -104,7 +119,7 @@
         if (!toggle || (event.key !== "Enter" && event.key !== " ")) return;
         event.preventDefault();
         event.stopImmediatePropagation();
-        if (musicEnabled) musicOff();
+        if (musicEnabled && playbackStarted) musicOff();
         else musicOn();
     }, true);
 

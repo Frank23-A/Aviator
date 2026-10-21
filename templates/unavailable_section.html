@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Page not found | OziBet!</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unavailable.css') }}">
+</head>
+<body class="unavailable-page">
+    {% include 'header.html' %}
+
+    <main class="unavailable-main">
+        <div class="safety-drift" id="safetyDrift" aria-hidden="true"></div>
+        <section class="unavailable-card" aria-labelledby="unavailable-title">
+            <h1 id="unavailable-title"><span class="unavailable-code"><span class="unavailable-digits">404</span><span class="unavailable-bang">!</span></span><span class="unavailable-error">error</span></h1>
+            <p class="unavailable-message">This section is not available yet. Click <a class="error-ok-button" href="{{ url_for('aviator') }}">OK</a></p>
+            <a class="return-to-safety" href="{{ url_for('aviator') }}">Return to safety!</a>
+        </section>
+    </main>
+
+    {% include 'footer.html' %}
+    <script src="{{ url_for('static', filename='js/header.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/unavailable.js') }}"></script>
+</body>
+</html>

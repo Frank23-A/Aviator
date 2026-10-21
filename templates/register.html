@@ -47,8 +47,8 @@
         <h2>Create account</h2>
         <input type="text" id="username" placeholder="Username" required>
         <input type="email" id="email" placeholder="Email" required>
+        <input type="tel" id="phone" placeholder="Phone number (e.g. +254 712 345 678)" autocomplete="tel" required>
         <input type="password" id="password" placeholder="Password" required>
-        <input type="number" id="balance" placeholder="Balance" value="500" step="0.01">
         <button type="submit">Register</button>
         <p>Already have an account? <a href="/login">Login</a></p>
         <div id="message" class="message"></div>
@@ -61,8 +61,8 @@
             const payload = {
                 username: document.getElementById('username').value,
                 email: document.getElementById('email').value,
-                password: document.getElementById('password').value,
-                balance: Number(document.getElementById('balance').value || 0)
+                phone: document.getElementById('phone').value,
+                password: document.getElementById('password').value
             };
 
             fetch('/register', {

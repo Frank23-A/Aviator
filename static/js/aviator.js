@@ -4,6 +4,8 @@ let crashPoint = 0;
 let interval = null;
 let flightTick = 0;
 let countdownTimer = null;
+let currentRoundId = null;
+window.currentAviatorRoundId = null;
 
 
 /* =========================================
@@ -138,15 +140,14 @@ document.querySelectorAll(".bottom-card").forEach(card => {
     let stake = 1;
 
     const stakeDisplay = card.querySelector(".stake-value");
-    const betValue = card.querySelector(".bet-value");
 
     function renderStake() {
         if (stakeDisplay) {
-            stakeDisplay.textContent = stake.toFixed(2);
-        }
-
-        if (betValue) {
-            betValue.textContent = `${stake.toFixed(2)} USD`;
+            if (stakeDisplay instanceof HTMLInputElement) {
+                stakeDisplay.value = stake.toFixed(2);
+            } else {
+                stakeDisplay.textContent = stake.toFixed(2);
+            }
         }
     }
 
@@ -167,6 +168,15 @@ document.querySelectorAll(".bottom-card").forEach(card => {
             renderStake();
         });
     });
+
+    if (stakeDisplay instanceof HTMLInputElement) {
+        stakeDisplay.addEventListener("input", () => {
+            const entered = Number(stakeDisplay.value);
+            if (Number.isFinite(entered) && entered >= 1) {
+                stake = entered;
+            }
+        });
+    }
 });
 
 
@@ -226,10 +236,14 @@ function startRound() {
             return res.json();
         })
         .then(data => {
-            startFlight(data.crash);
+            currentRoundId = data.round_id;
+            window.currentAviatorRoundId = currentRoundId;
+            startFlight(data.crash, currentRoundId);
         })
         .catch(() => {
-            startFlight(generateLocalCrash());
+            currentRoundId = null;
+            window.currentAviatorRoundId = null;
+            startFlight(generateLocalCrash(), null);
         });
 }
 
@@ -259,7 +273,7 @@ function generateLocalCrash() {
    START FLIGHT
 ========================================= */
 
-function startFlight(crash) {
+function startFlight(crash, roundId = null) {
     clearInterval(interval);
     interval = null;
 
@@ -293,7 +307,9 @@ function startFlight(crash) {
     */
 
     window.dispatchEvent(
-        new CustomEvent("aviatorRoundStarted")
+        new CustomEvent("aviatorRoundStarted", {
+            detail: { roundId }
+        })
     );
 
     // Start the flight.
@@ -319,6 +335,10 @@ function updateGame() {
 
     multiplierDisplay.innerText =
         multiplier.toFixed(2) + "x";
+
+    window.dispatchEvent(new CustomEvent("aviatorMultiplier", {
+        detail: { multiplier }
+    }));
 
 
     /* =====================================
@@ -508,7 +528,8 @@ function updateGame() {
         window.dispatchEvent(
             new CustomEvent("aviatorCrash", {
                 detail: {
-                    crash: crashPoint
+                    crash: crashPoint,
+                    roundId: currentRoundId
                 }
             })
         );

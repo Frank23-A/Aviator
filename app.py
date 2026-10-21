@@ -1,7 +1,10 @@
 
 import os
 import random
+import math
+import re
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from functools import wraps
 
 from flask import (
@@ -14,6 +17,7 @@ from flask import (
     url_for,
 )
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Index, inspect
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
@@ -96,6 +100,11 @@ class User(db.Model):
         nullable=False
     )
 
+    phone = db.Column(
+        db.String(32),
+        nullable=True,
+    )
+
     password_hash = db.Column(
         db.String(255),
         nullable=False
@@ -118,6 +127,25 @@ class User(db.Model):
         backref="user",
         lazy=True
     )
+
+
+def normalize_phone_number(value):
+    """Return a normalized international-style phone string, or None."""
+    raw = str(value or "").strip()
+    if not raw or not re.fullmatch(r"[+0-9() .-]+", raw):
+        return None
+    if raw.count("+") > 1 or ("+" in raw and not raw.startswith("+")):
+        return None
+
+    digits = re.sub(r"\D", "", raw)
+    # Accept common Kenyan local mobile formats as well as +254 numbers.
+    if len(digits) == 10 and digits.startswith("0"):
+        digits = "254" + digits[1:]
+
+    if not 7 <= len(digits) <= 15:
+        return None
+
+    return "+" + digits
 
 
 # =========================================================
@@ -176,6 +204,23 @@ class GameState(db.Model):
     )
 
 
+class GameRound(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    crash_point = db.Column(db.Float, nullable=False)
+    started_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+
+class Wager(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    round_id = db.Column(db.Integer, db.ForeignKey("game_round.id"), nullable=False, index=True)
+    bet_amount = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), default="active", nullable=False)
+    settled_multiplier = db.Column(db.Float, nullable=True)
+    payout = db.Column(db.Float, default=0.0, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+
 # =========================================================
 # CRASH GENERATOR
 # =========================================================
@@ -230,6 +275,21 @@ def get_or_create_state():
 with app.app_context():
 
     db.create_all()
+
+    # Add phone login support to databases created before phone numbers were
+    # part of the account model. Existing users can add a number from Profile.
+    user_table = User.__table__
+    inspector = inspect(db.engine)
+    user_columns = {column["name"] for column in inspector.get_columns(user_table.name)}
+    if "phone" not in user_columns:
+        quoted_table = db.engine.dialect.identifier_preparer.quote(user_table.name)
+        with db.engine.begin() as connection:
+            connection.exec_driver_sql(
+                f"ALTER TABLE {quoted_table} ADD COLUMN phone VARCHAR(32)"
+            )
+
+    phone_index = Index("ix_user_phone", User.phone, unique=True)
+    phone_index.create(bind=db.engine, checkfirst=True)
 
     get_or_create_state()
 
@@ -308,6 +368,50 @@ def aviator():
     )
 
 
+@app.route("/profile")
+@app.route("/profile.html")
+@login_required
+def profile():
+    return render_template("profile.html", user=current_user())
+
+
+@app.route("/api/profile/phone", methods=["POST"])
+@login_required
+def update_profile_phone():
+    payload = request.get_json(silent=True) or {}
+    phone = normalize_phone_number(payload.get("phone"))
+    if not phone:
+        return jsonify({"error": "Enter a valid phone number."}), 400
+
+    user = current_user()
+    duplicate = User.query.filter(
+        User.phone == phone,
+        User.id != user.id,
+    ).first()
+    if duplicate:
+        return jsonify({"error": "That phone number is already registered."}), 409
+
+    user.phone = phone
+    db.session.commit()
+    return jsonify({"message": "Phone number saved.", "phone": user.phone})
+
+
+# These navigation destinations are not implemented yet. Keep their URLs
+# available so they can display the shared site chrome and a useful return link.
+@app.route("/live.html")
+@app.route("/jackpots.html")
+@app.route("/shikisha-bet.html")
+@app.route("/ligi-bigi.html")
+@app.route("/casino.html")
+@app.route("/promotions.html")
+@app.route("/virtuals.html")
+@app.route("/betika-fasta.html")
+@app.route("/crash-games.html")
+@app.route("/live-score.html")
+def unavailable_section():
+    return render_template("unavailable_section.html"), 404
+
+
 # =========================================================
 # FOOTER
 # =========================================================
@@ -336,17 +440,176 @@ def footer():
 @app.route("/crash")
 def crash():
 
+    if not api_logged_in_user():
+        return jsonify({"error": "Log in to start a game round."}), 401
+
     state = get_or_create_state()
 
     current = state.next_crash
 
     state.next_crash = generate_crash()
+    round_row = GameRound(crash_point=current)
+    db.session.add(round_row)
+
+    # Bets queued during the previous flight join this round after countdown.
+    queued_bets = Wager.query.filter_by(status="queued").all()
+    for wager in queued_bets:
+        wager.round_id = round_row.id
+        wager.status = "active"
 
     db.session.commit()
 
     return jsonify({
-        "crash": current
+        "crash": current,
+        "round_id": round_row.id
     })
+
+
+def api_logged_in_user():
+    user_id = session.get("user_id")
+    return db.session.get(User, user_id) if user_id else None
+
+
+def server_round_multiplier(round_row):
+    elapsed = max(0.0, (datetime.utcnow() - round_row.started_at).total_seconds())
+    return math.floor((1 + elapsed * 0.25) * 100) / 100
+
+
+def write_game_result(user, wager, result, multiplier):
+    db.session.add(GameHistory(
+        user_id=user.id,
+        bet_amount=wager.bet_amount,
+        multiplier=multiplier,
+        result=result,
+    ))
+
+
+@app.route("/api/bets/place", methods=["POST"])
+def place_bet():
+    user = api_logged_in_user()
+    if not user:
+        return jsonify({"error": "Log in before placing a bet."}), 401
+
+    payload = request.get_json(silent=True) or {}
+    try:
+        round_id = int(payload.get("round_id"))
+        amount = Decimal(str(payload.get("amount", "")))
+    except (TypeError, ValueError, InvalidOperation):
+        return jsonify({"error": "Enter a valid stake and game round."}), 400
+
+    if not amount.is_finite() or amount < Decimal("1") or amount > Decimal("1000000"):
+        return jsonify({"error": "Bet amount must be between USD 1 and USD 1,000,000."}), 400
+
+    round_row = db.session.get(GameRound, round_id)
+    if not round_row:
+        return jsonify({"error": "Game round not found. Wait for the next round."}), 404
+
+    current_multiplier = server_round_multiplier(round_row)
+    if current_multiplier >= round_row.crash_point:
+        return jsonify({"error": "This round has crashed. Wait for the next round."}), 409
+
+    active_count = Wager.query.filter(
+        Wager.user_id == user.id,
+        Wager.status.in_(("active", "queued")),
+    ).count()
+    if active_count >= 2:
+        return jsonify({"error": "You already have two active bets this round."}), 409
+
+    amount_value = round(float(amount), 2)
+    if user.balance < amount_value:
+        return jsonify({"error": "Insufficient balance."}), 400
+
+    # If the multiplier has started, hold the bet for the next round.
+    wager_status = "queued" if current_multiplier > 1.0 else "active"
+    user.balance = round(user.balance - amount_value, 2)
+    wager = Wager(
+        user_id=user.id,
+        round_id=round_row.id,
+        bet_amount=amount_value,
+        status=wager_status,
+    )
+    db.session.add(wager)
+    db.session.commit()
+
+    return jsonify({
+        "wager_id": wager.id,
+        "amount": amount_value,
+        "balance": user.balance,
+        "multiplier": current_multiplier,
+        "status": wager_status,
+    })
+
+
+@app.route("/api/bets/cashout", methods=["POST"])
+def cashout_bet():
+    user = api_logged_in_user()
+    if not user:
+        return jsonify({"error": "Log in before cashing out."}), 401
+
+    payload = request.get_json(silent=True) or {}
+    try:
+        wager_id = int(payload.get("wager_id"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Invalid bet."}), 400
+
+    wager = Wager.query.filter_by(id=wager_id, user_id=user.id).first()
+    if not wager or wager.status != "active":
+        return jsonify({"error": "This bet is no longer active."}), 409
+
+    round_row = db.session.get(GameRound, wager.round_id)
+    current_multiplier = server_round_multiplier(round_row)
+    if current_multiplier >= round_row.crash_point:
+        wager.status = "lost"
+        wager.settled_multiplier = round_row.crash_point
+        write_game_result(user, wager, "lose", round_row.crash_point)
+        db.session.commit()
+        return jsonify({
+            "status": "lost",
+            "multiplier": round_row.crash_point,
+            "balance": user.balance,
+            "error": "The plane crashed before cash-out. Your stake was lost.",
+        })
+
+    payout = round(wager.bet_amount * current_multiplier, 2)
+    user.balance = round(user.balance + payout, 2)
+    wager.status = "cashed_out"
+    wager.settled_multiplier = current_multiplier
+    wager.payout = payout
+    write_game_result(user, wager, "win", current_multiplier)
+    db.session.commit()
+
+    return jsonify({
+        "status": "cashed_out",
+        "multiplier": current_multiplier,
+        "payout": payout,
+        "balance": user.balance,
+    })
+
+
+@app.route("/api/bets/settle-round", methods=["POST"])
+def settle_round_bets():
+    user = api_logged_in_user()
+    if not user:
+        return jsonify({"error": "Log in to settle bets."}), 401
+
+    payload = request.get_json(silent=True) or {}
+    try:
+        round_id = int(payload.get("round_id"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Invalid game round."}), 400
+
+    round_row = db.session.get(GameRound, round_id)
+    if not round_row:
+        return jsonify({"error": "Game round not found."}), 404
+
+    wagers = Wager.query.filter_by(user_id=user.id, round_id=round_id, status="active").all()
+    for wager in wagers:
+        wager.status = "lost"
+        wager.settled_multiplier = round_row.crash_point
+        write_game_result(user, wager, "lose", round_row.crash_point)
+
+    db.session.commit()
+    return jsonify({"balance": user.balance, "lost_count": len(wagers)})
 
 
 # =========================================================
@@ -403,63 +666,55 @@ def register():
             or ""
         ).strip()
 
+        phone = normalize_phone_number(payload.get("phone"))
+
         password = (
             payload.get("password")
             or ""
         )
 
-        try:
-
-            balance = float(
-                payload.get(
-                    "balance",
-                    0.0
-                )
-                or 0.0
-            )
-
-        except (TypeError, ValueError):
-
-            balance = 0.0
-
-        if not username or not email or not password:
+        if not username or not email or not phone or not password:
 
             return jsonify({
                 "error": (
-                    "username, email, and password "
-                    "are required"
+                    "username, email, phone number, and password "
+                    "are required. Enter a valid phone number."
                 )
             }), 400
 
         existing_user = User.query.filter(
             (User.username == username)
             | (User.email == email)
+            | (User.phone == phone)
         ).first()
 
         if existing_user:
 
             return jsonify({
                 "error": (
-                    "username or email already exists"
+                    "username, email, or phone number already exists"
                 )
             }), 409
 
         user = User(
             username=username,
             email=email,
+            phone=phone,
             password_hash=generate_password_hash(
                 password
             ),
-            balance=balance,
+            # New accounts start with no funds. Balance changes must happen
+            # through a verified payment flow, never from registration data.
+            balance=0.0,
         )
 
         db.session.add(user)
 
         db.session.commit()
 
-        session["user_id"] = user.id
-
-        session["username"] = user.username
+        # Registration is not a login; a user must authenticate explicitly
+        # before they can access the game or its deposit controls.
+        session.clear()
 
         if request.is_json:
 
@@ -469,12 +724,13 @@ def register():
                     "user registered successfully"
                 ),
 
-                "logged_in": True,
+                "logged_in": False,
 
                 "user": {
                     "id": user.id,
                     "username": user.username,
                     "email": user.email,
+                    "phone": user.phone,
                     "balance": user.balance,
                 },
 
@@ -506,27 +762,26 @@ def login_page():
             or request.form
         )
 
-        username = (
-            payload.get("username")
+        phone = normalize_phone_number(
+            payload.get("phone")
             or ""
-        ).strip()
+        )
 
         password = (
             payload.get("password")
             or ""
         )
 
-        if not username or not password:
+        if not phone or not password:
 
             return jsonify({
                 "error": (
-                    "username and password "
-                    "are required"
+                    "a valid phone number and password are required"
                 )
             }), 400
 
         user = User.query.filter_by(
-            username=username
+            phone=phone
         ).first()
 
         if (
@@ -539,7 +794,7 @@ def login_page():
 
             return jsonify({
                 "error": (
-                    "invalid username or password"
+                    "invalid phone number or password"
                 )
             }), 401
 
@@ -559,6 +814,7 @@ def login_page():
                     "id": user.id,
                     "username": user.username,
                     "email": user.email,
+                    "phone": user.phone,
                     "balance": user.balance,
                 },
 
@@ -638,9 +894,46 @@ def me():
             "id": user.id,
             "username": user.username,
             "email": user.email,
+            "phone": user.phone,
             "balance": user.balance,
         },
 
+    })
+
+
+# =========================================================
+# LOCAL M-PESA DEPOSIT TEST
+# =========================================================
+
+@app.route("/api/deposits/mpesa-test", methods=["POST"])
+def mpesa_test_deposit():
+    # This endpoint only simulates a successful provider confirmation. Keep it
+    # unavailable outside debug/testing so it cannot credit a live account.
+    if not app.debug and not app.testing:
+        return jsonify({"error": "M-Pesa test deposits are disabled."}), 403
+
+    user_id = session.get("user_id")
+    user = db.session.get(User, user_id) if user_id else None
+    if not user:
+        return jsonify({"error": "Log in before depositing."}), 401
+
+    payload = request.get_json(silent=True) or {}
+    try:
+        amount = Decimal(str(payload.get("amount", "")))
+    except (InvalidOperation, TypeError, ValueError):
+        return jsonify({"error": "Enter a valid deposit amount."}), 400
+
+    if not amount.is_finite() or amount < Decimal("10") or amount > Decimal("1000000"):
+        return jsonify({"error": "Test deposits must be between KES 10 and KES 1,000,000."}), 400
+
+    user.balance = round(float(user.balance) + float(amount), 2)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Test credit added 1:1 to the USD balance. No real M-Pesa payment was made.",
+        "test_mode": True,
+        "amount": float(amount),
+        "balance": user.balance,
     })
 
 
@@ -713,174 +1006,9 @@ def game_history():
 # PLAY GAME
 # =========================================================
 
-@app.route(
-    "/play",
-    methods=["POST"]
-)
+@app.route("/play", methods=["POST"])
 def play_game():
-
-    payload = (
-        request.get_json(silent=True)
-        or request.form
-    )
-
-    user_id = payload.get(
-        "user_id"
-    )
-
-    try:
-
-        bet_amount = float(
-            payload.get(
-                "bet_amount",
-                0
-            )
-            or 0
-        )
-
-        multiplier = float(
-            payload.get(
-                "multiplier",
-                1
-            )
-            or 1
-        )
-
-    except (TypeError, ValueError):
-
-        return jsonify({
-            "error": (
-                "bet_amount and multiplier "
-                "must be valid numbers"
-            )
-        }), 400
-
-    result = (
-        payload.get("result")
-        or "lose"
-    ).strip().lower()
-
-    if user_id is None:
-
-        return jsonify({
-            "error": "user_id is required"
-        }), 400
-
-    try:
-
-        user_id = int(user_id)
-
-    except (TypeError, ValueError):
-
-        return jsonify({
-            "error": "user_id must be valid"
-        }), 400
-
-    user = db.session.get(
-        User,
-        user_id
-    )
-
-    if user is None:
-
-        return jsonify({
-            "error": "user not found"
-        }), 404
-
-    if result not in {
-        "win",
-        "lose"
-    }:
-
-        return jsonify({
-            "error": (
-                "result must be 'win' or 'lose'"
-            )
-        }), 400
-
-    if bet_amount < 0:
-
-        return jsonify({
-            "error": (
-                "bet amount cannot be negative"
-            )
-        }), 400
-
-    if multiplier < 0:
-
-        return jsonify({
-            "error": (
-                "multiplier cannot be negative"
-            )
-        }), 400
-
-    if result == "win":
-
-        user.balance += (
-            bet_amount * multiplier
-        )
-
-    else:
-
-        user.balance -= bet_amount
-
-    game_record = GameHistory(
-
-        user_id=user.id,
-
-        bet_amount=bet_amount,
-
-        multiplier=multiplier,
-
-        result=result,
-
-    )
-
-    db.session.add(
-        game_record
-    )
-
-    db.session.commit()
-
-    return jsonify({
-
-        "message": (
-            "game recorded successfully"
-        ),
-
-        "user": {
-            "id": user.id,
-            "username": user.username,
-            "balance": user.balance,
-        },
-
-        "game": {
-
-            "id": game_record.id,
-
-            "user_id": (
-                game_record.user_id
-            ),
-
-            "bet_amount": (
-                game_record.bet_amount
-            ),
-
-            "multiplier": (
-                game_record.multiplier
-            ),
-
-            "result": (
-                game_record.result
-            ),
-
-            "created_at": (
-                game_record.created_at.isoformat()
-            ),
-
-        },
-
-    })
+    return jsonify({"error": "This endpoint is disabled. Use the authenticated bet and cash-out endpoints."}), 410
 
 
 # =========================================================

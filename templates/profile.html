@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Profile | OziBet!</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+</head>
+<body class="profile-page" data-deposit-return="{{ url_for('profile') }}">
+    {% include 'header.html' %}
+
+    <main class="profile-dashboard">
+        <section class="profile-identity" aria-label="Account profile">
+            <span class="profile-avatar" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"></circle><path d="M5.5 20c.4-4 2.7-6.1 6.5-6.1s6.1 2.1 6.5 6.1"></path></svg>
+            </span>
+            <div class="profile-identity-copy">
+                <strong>{{ user.username }}</strong>
+                <span id="profilePhoneDisplay">{{ user.phone or 'Phone number not added' }}</span>
+            </div>
+            <button class="profile-phone-edit" id="profilePhoneEdit" type="button" aria-expanded="{{ 'false' if user.phone else 'true' }}">{{ 'Edit' if user.phone else 'Add phone' }}</button>
+        </section>
+        <form class="profile-phone-form" id="profilePhoneForm" {% if user.phone %}hidden{% endif %}>
+            <label for="profilePhoneInput">Phone number for login</label>
+            <div class="profile-phone-form-row">
+                <input id="profilePhoneInput" type="tel" autocomplete="tel" placeholder="+254 712 345 678" value="{{ user.phone or '' }}" required>
+                <button type="submit">Save</button>
+            </div>
+            <p id="profilePhoneStatus" class="profile-status" role="status" aria-live="polite"></p>
+        </form>
+
+        <section class="profile-balance profile-panel" aria-label="Account balances">
+            <div class="balance-item">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5 12 3l8 5.5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path><path d="M4 9h16M8 13h.01M12 13h.01M16 13h.01"></path></svg>
+                <span><small>Balance</small><strong><span id="headerBalance">{{ '{:,.2f}'.format(user.balance) }}</span> USD</strong></span>
+            </div>
+            <div class="balance-item bonus-item">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h18v12H3zM2 6h20v4H2zM12 6v15M12 6H7.5a2.5 2.5 0 1 1 2.2-3.7L12 6Zm0 0h4.5a2.5 2.5 0 1 0-2.2-3.7L12 6Z"></path></svg>
+                <span><small>Bonus</small><strong>USD 0.00</strong></span>
+            </div>
+        </section>
+
+        <section class="profile-offers profile-panel" aria-label="Offers">
+            <div class="offer-item">
+                <strong>Freebets &amp; Promotions</strong>
+                <a href="{{ url_for('unavailable_section') }}">View all</a>
+            </div>
+            <div class="offer-divider" aria-hidden="true"></div>
+            <div class="offer-item">
+                <strong>Jackpot Streaks</strong>
+                <a href="{{ url_for('unavailable_section') }}">View all</a>
+            </div>
+        </section>
+
+        <section class="profile-panel wallet-panel" aria-labelledby="profile-deposit-title">
+            <h1 id="profile-deposit-title">Deposit</h1>
+            <p class="panel-subtitle">Send money into your account</p>
+            <div class="profile-amount-box">
+                <button type="button" data-profile-adjust="-100" aria-label="Decrease deposit amount">−</button>
+                <input id="profileDepositAmount" type="number" min="10" step="1" inputmode="decimal" placeholder="Enter amount to deposit" aria-label="Enter deposit amount in KES">
+                <button type="button" data-profile-adjust="100" aria-label="Increase deposit amount">+</button>
+            </div>
+            <p class="profile-help">Minimum KES 10. Test deposits are credited 1:1; no real payment is sent.</p>
+            <div class="profile-quick-amounts" aria-label="Quick deposit amounts">
+                <button type="button" data-profile-amount="100">+100</button>
+                <button type="button" data-profile-amount="200">+200</button>
+                <button type="button" data-profile-amount="500">+500</button>
+                <button type="button" data-profile-amount="1000">+1000</button>
+            </div>
+            <div class="profile-payment-methods">
+                <button type="button" class="profile-cashia" data-profile-cashia>
+                    <span aria-hidden="true">◉</span> Deposit with Cashia
+                </button>
+                <button type="button" class="profile-mpesa" data-profile-mpesa>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v18H7zM9 6h6M10 18h4M4 8v8M20 8v8"></path></svg>
+                    Deposit with Mpesa
+                </button>
+            </div>
+            <p class="profile-promo-note">Cashia deposits are not connected. M-Pesa is currently in test mode.</p>
+            <p class="profile-status" id="profileDepositStatus" role="status" aria-live="polite"></p>
+        </section>
+
+        <section class="profile-panel wallet-panel withdraw-panel" aria-labelledby="profile-withdraw-title">
+            <h2 id="profile-withdraw-title">Withdrawals</h2>
+            <p class="panel-subtitle">Withdraw money from your account</p>
+            <div class="profile-amount-box">
+                <button type="button" data-withdraw-adjust="-50" aria-label="Decrease withdrawal amount">−</button>
+                <input id="profileWithdrawAmount" type="number" min="50" max="300000" step="1" inputmode="decimal" placeholder="Enter amount to withdraw" aria-label="Enter withdrawal amount in KES">
+                <button type="button" data-withdraw-adjust="50" aria-label="Increase withdrawal amount">+</button>
+            </div>
+            <p class="profile-help">Minimum KES 50, maximum KES 300,000. Withdrawal processing is not connected yet.</p>
+            <div class="profile-payment-methods">
+                <button type="button" class="profile-cashia" data-withdraw-unavailable>Withdraw with Cashia</button>
+                <button type="button" class="profile-mpesa withdraw-mpesa" data-withdraw-unavailable>Withdraw with Mpesa</button>
+            </div>
+            <p class="profile-status" id="profileWithdrawStatus" role="status" aria-live="polite"></p>
+        </section>
+
+        <button class="profile-panel profile-row-button transactions-row" type="button" id="transactionsToggle" aria-expanded="false">
+            <span class="row-leading-icon" aria-hidden="true">▣</span>
+            <span class="profile-row-copy"><strong>My Transactions</strong><small>View all your debits and credits</small></span>
+            <span class="row-chevron" aria-hidden="true">›</span>
+        </button>
+        <div class="transactions-empty" id="transactionsEmpty" hidden>No transactions to display yet.</div>
+
+        <h2 class="profile-section-title">Preferences</h2>
+        <section class="profile-panel preferences-panel">
+            <button class="preference-setting" id="profileThemeToggle" type="button">
+                <span><strong>Display</strong><small>Switch between light theme and dark theme</small></span>
+                <span class="preference-icon" aria-hidden="true">☼</span>
+            </button>
+            <label class="preference-setting data-saver-setting">
+                <span><strong>Data Saver</strong><small>Turn on to save data bundles</small></span>
+                <input type="checkbox" id="profileDataSaver">
+                <span class="profile-switch" aria-hidden="true"></span>
+            </label>
+        </section>
+
+        <h2 class="profile-section-title other-info-title">Other Info &amp; Preferences</h2>
+        <p class="profile-section-caption">Information that is critical in managing your account</p>
+        <section class="profile-panel support-panel">
+            <h3>Support</h3>
+            <button class="support-row" type="button" data-support-message="Account deletion is not available in this demo.">
+                <span><small>Delete</small><strong>Delete Account</strong></span><span class="row-chevron">›</span>
+            </button>
+            <button class="support-row" type="button" data-support-message="For responsible gaming support, contact support@betika.com.">
+                <span><small>Responsible Gaming</small><strong>Responsible Gaming</strong></span><span class="row-chevron">›</span>
+            </button>
+            <p class="profile-status support-status" id="supportStatus" role="status" aria-live="polite"></p>
+            <a href="{{ url_for('logout') }}" class="signout-link">Sign Out</a>
+            <div class="profile-version">OziBet! Web v1.0.0</div>
+        </section>
+    </main>
+
+    {% include 'footer.html' %}
+    <script src="{{ url_for('static', filename='js/header.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+</body>
+</html>

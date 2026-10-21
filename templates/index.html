@@ -4,7 +4,7 @@
 <head>
 <title>Aviator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='rays-only-during-flight') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='auto-card-gap-v9') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
 
@@ -19,6 +19,11 @@
     <div class="bar-spacer"></div>
     <div class="balance"><strong id="headerBalance">{{ '{:,.2f}'.format(user.balance) }}</strong><span>USD</span></div>
     <button class="menu-button" id="menuButton" type="button" aria-label="Open menu">☰</button>
+    <button class="message-button" id="messageButton" type="button" aria-label="Messages" title="Messages">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8A8.5 8.5 0 0 1 8.7 3.9a8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"/>
+        </svg>
+    </button>
    
 </div>
 
@@ -101,18 +106,38 @@
         <div class="bottom-cards">
             
             <section class="bottom-card" aria-label="First bet control">
-                <div class="bet-adjuster">
-                    <div class="stake-control"><button type="button" data-adjust="-1" aria-label="Decrease bet">−</button><strong class="stake-value">1.00</strong><button type="button" data-adjust="1" aria-label="Increase bet">+</button></div>
-                    <div class="quick-stakes"><button type="button" data-stake="1">1</button><button type="button" data-stake="2">2</button><button type="button" data-stake="5">5</button><button type="button" data-stake="10">10</button></div>
+                <div class="bet-mode-tabs" role="tablist" aria-label="First bet mode">
+                    <button type="button" class="bet-mode-tab active" data-bet-mode="bet" role="tab" aria-selected="true">Bet</button>
+                    <button type="button" class="bet-mode-tab" data-bet-mode="auto" role="tab" aria-selected="false">Auto</button>
                 </div>
-                <button class="green-button" id="cardButton1" type="button"><span class="bet-label">Bet</span><span class="bet-value">1.00 USD</span></button>
+                <div class="bet-main-row">
+                    <div class="bet-adjuster">
+                        <div class="stake-control"><button type="button" data-adjust="-1" aria-label="Decrease bet">−</button><input class="stake-value" type="number" min="1" step="0.01" inputmode="decimal" value="1.00" aria-label="Enter first bet amount in USD" title="Type the amount to bet"><button type="button" data-adjust="1" aria-label="Increase bet">+</button></div>
+                        <div class="quick-stakes"><button type="button" data-stake="1">1</button><button type="button" data-stake="2">2</button><button type="button" data-stake="5">5</button><button type="button" data-stake="10">10</button></div>
+                    </div>
+                    <button class="green-button" id="cardButton1" type="button"><span class="bet-label">Bet</span><span class="bet-value">1.00 USD</span></button>
+                </div>
+                <div class="auto-options" hidden>
+                    <label class="auto-option"><span>Auto bet</span><input class="auto-bet-toggle" type="checkbox"><span class="mini-switch"></span></label>
+                    <label class="auto-option auto-cashout-option"><span>Auto Cash Out</span><input class="auto-cashout-toggle" type="checkbox"><span class="mini-switch"></span><input class="auto-cashout-target" type="number" min="1.01" step="0.01" value="1.10" aria-label="Automatic cash out multiplier"><button class="clear-auto-target" type="button" aria-label="Reset automatic cash out multiplier">×</button></label>
+                </div>
             </section>
             <section class="bottom-card" aria-label="Second bet control">
-                <div class="bet-adjuster">
-                    <div class="stake-control"><button type="button" data-adjust="-1" aria-label="Decrease bet">−</button><strong class="stake-value">1.00</strong><button type="button" data-adjust="1" aria-label="Increase bet">+</button></div>
-                    <div class="quick-stakes"><button type="button" data-stake="1">1</button><button type="button" data-stake="2">2</button><button type="button" data-stake="5">5</button><button type="button" data-stake="10">10</button></div>
+                <div class="bet-mode-tabs" role="tablist" aria-label="Second bet mode">
+                    <button type="button" class="bet-mode-tab active" data-bet-mode="bet" role="tab" aria-selected="true">Bet</button>
+                    <button type="button" class="bet-mode-tab" data-bet-mode="auto" role="tab" aria-selected="false">Auto</button>
                 </div>
-                <button class="green-button" id="cardButton2" type="button"><span class="bet-label">Bet</span><span class="bet-value">1.00 USD</span></button>
+                <div class="bet-main-row">
+                    <div class="bet-adjuster">
+                        <div class="stake-control"><button type="button" data-adjust="-1" aria-label="Decrease bet">−</button><input class="stake-value" type="number" min="1" step="0.01" inputmode="decimal" value="1.00" aria-label="Enter second bet amount in USD" title="Type the amount to bet"><button type="button" data-adjust="1" aria-label="Increase bet">+</button></div>
+                        <div class="quick-stakes"><button type="button" data-stake="1">1</button><button type="button" data-stake="2">2</button><button type="button" data-stake="5">5</button><button type="button" data-stake="10">10</button></div>
+                    </div>
+                    <button class="green-button" id="cardButton2" type="button"><span class="bet-label">Bet</span><span class="bet-value">1.00 USD</span></button>
+                </div>
+                <div class="auto-options" hidden>
+                    <label class="auto-option"><span>Auto bet</span><input class="auto-bet-toggle" type="checkbox"><span class="mini-switch"></span></label>
+                    <label class="auto-option auto-cashout-option"><span>Auto Cash Out</span><input class="auto-cashout-toggle" type="checkbox"><span class="mini-switch"></span><input class="auto-cashout-target" type="number" min="1.01" step="0.01" value="1.10" aria-label="Automatic cash out multiplier"><button class="clear-auto-target" type="button" aria-label="Reset automatic cash out multiplier">×</button></label>
+                </div>
             </section>
         </div>
     </section>  
@@ -255,12 +280,14 @@
 <!-- ==== RIGHT SIDE MENU  ==== -->
 
 <script src="{{ url_for('static', filename='js/aviator.js', v='no-dance-transition-oscillation') }}"></script>
+<script src="{{ url_for('static', filename='js/wagers.js', v='fixed-bet-card-size-v11') }}"></script>
 <script src="{{ url_for('static', filename='js/sidemenu.js') }}"></script>
+<script src="{{ url_for('static', filename='js/animation.js') }}"></script>
 <script src="{{ url_for('static', filename='js/betlist.js') }}"></script>
 <script src="{{ url_for('static', filename='js/top.js') }}"></script>
 <script src="{{ url_for('static', filename='js/previous.js') }}"></script>
 <script src="{{ url_for('static', filename='js/header.js') }}"></script>
-<script src="{{ url_for('static', filename='js/game-audio.js') }}"></script>
+<script src="{{ url_for('static', filename='js/game-audio.js', v='aviator-route-audio') }}"></script>
 
 </body>
 </html>

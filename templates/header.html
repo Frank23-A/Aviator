@@ -73,7 +73,7 @@
                 <!-- PROFILE -->
 
                 <a
-                    href="profile.html"
+                    href="{{ url_for('profile') }}"
                     class="right-item"
                     aria-label="Profile"
                 >
@@ -267,21 +267,36 @@
             onclick="openFullscreen()"
             role="button"
             tabindex="0"
+            aria-label="View Fullscreen"
+            title="View Fullscreen"
         >
-            View Fullscreen
-            &nbsp;
-            <svg
-               xmlns="http://www.w3.org/2000/svg"
-               viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"stroke-linecap="round"stroke-linejoin="round">
+            <span class="fullscreen-label">View Fullscreen</span>
+            <svg class="fullscreen-icon fullscreen-enter-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
                <path d="M16 3h3a2 2 0 0 1 2 2v3"/>
                <path d="M21 16v3a2 2 0 0 1-2 2h-3"/>
                <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
             </svg>
+            <svg class="fullscreen-icon fullscreen-exit-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+               <path d="M8 3v3a2 2 0 0 1-2 2H3"/>
+               <path d="M16 3v3a2 2 0 0 0 2 2h3"/>
+               <path d="M21 16h-3a2 2 0 0 0-2 2v3"/>
+               <path d="M3 16h3a2 2 0 0 1 2 2v3"/>
+            </svg>
         </div>
 
     </div>
 
+</div>
+
+<div class="deposit-overlay" id="depositSuccessOverlay" aria-hidden="true">
+    <div class="deposit-modal deposit-success-modal" role="dialog" aria-modal="true" aria-labelledby="depositSuccessTitle">
+        <div class="deposit-card deposit-success-card">
+            <h2 class="deposit-card-title" id="depositSuccessTitle">Thank you for depositing</h2>
+            <p class="deposit-card-subtitle" id="depositSuccessMessage"></p>
+            <button class="deposit-success-ok" type="button" onclick="returnAfterDeposit()">OK</button>
+        </div>
+    </div>
 </div>
 
 <!-- =========================================================
@@ -322,7 +337,7 @@
             </h2>
 
             <p class="deposit-card-subtitle">
-                Send money into your Betika account
+                Send money into your Ozibet account
             </p>
 
             <!-- DEPOSIT AMOUNT -->
@@ -447,6 +462,8 @@
             <p class="deposit-tax">
                 Cashia 100 ni 100! *Gaming tax applies
             </p>
+
+            <p class="deposit-status" id="depositStatus" role="status" aria-live="polite"></p>
 
         </div>
 

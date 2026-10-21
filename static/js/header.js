@@ -3,21 +3,37 @@
    THEME TOGGLE
 ========================================================= */
 
+function syncProfileThemeIcon() {
+    const headerButton = document.getElementById("themeButton");
+    const profileIcon = document.querySelector("#profileThemeToggle .preference-icon");
+    if (!headerButton || !profileIcon) return;
+
+    profileIcon.innerHTML = headerButton.innerHTML;
+    profileIcon.style.color = getComputedStyle(headerButton).color;
+}
+
 function toggleTheme() {
 
-    const body =
+    const siteHeader =
         document.getElementById("siteHeader");
+    const siteFooter =
+        document.getElementById("siteFooter");
 
     const themeButton =
         document.getElementById("themeButton");
 
     // Stop if the header or theme button does not exist.
-    if (!body || !themeButton) {
+    if (!siteHeader || !themeButton) {
         return;
     }
 
-    // Toggle the theme on the header only.
-    body.classList.toggle("light-mode");
+    const isLightMode = siteHeader.classList.toggle("light-mode");
+    if (siteFooter) {
+        siteFooter.classList.toggle("light-mode", isLightMode);
+    }
+    if (document.body.classList.contains("profile-page")) {
+        document.body.classList.toggle("profile-light-mode", isLightMode);
+    }
 
 
     /* =====================================================
@@ -26,7 +42,7 @@ function toggleTheme() {
     ====================================================== */
 
     if (
-        body.classList.contains("light-mode")
+        isLightMode
     ) {
 
         themeButton.innerHTML = `
@@ -145,6 +161,8 @@ function toggleTheme() {
 
     }
 
+    syncProfileThemeIcon();
+
 }
 
 
@@ -161,6 +179,8 @@ window.addEventListener(
 
         const siteHeader =
             document.getElementById("siteHeader");
+        const siteFooter =
+            document.getElementById("siteFooter");
 
         const themeButton =
             document.getElementById("themeButton");
@@ -172,8 +192,12 @@ window.addEventListener(
 
         if (savedTheme === "light") {
 
-            // Apply the saved theme to the header only.
+            // Apply the saved theme to the header and website footer only.
             siteHeader.classList.add("light-mode");
+            if (siteFooter) siteFooter.classList.add("light-mode");
+            if (document.body.classList.contains("profile-page")) {
+                document.body.classList.add("profile-light-mode");
+            }
 
             themeButton.innerHTML = `
 
@@ -198,12 +222,18 @@ window.addEventListener(
 
         } else {
 
-            // Ensure the header starts in dark mode.
+            // Ensure the header and website footer start in dark mode.
             siteHeader.classList.remove("light-mode");
+            if (siteFooter) siteFooter.classList.remove("light-mode");
+            if (document.body.classList.contains("profile-page")) {
+                document.body.classList.remove("profile-light-mode");
+            }
 
             themeButton.style.color = "#ffd000";
 
         }
+
+        syncProfileThemeIcon();
 
     }
 );
@@ -278,6 +308,26 @@ function closeDeposit() {
 
 }
 
+function returnToAviator() {
+    const overlay = document.getElementById("depositSuccessOverlay");
+    if (overlay) {
+        overlay.classList.remove("show");
+        overlay.setAttribute("aria-hidden", "true");
+    }
+    document.body.style.overflow = "";
+    window.location.assign("/aviator");
+}
+
+function returnAfterDeposit() {
+    const overlay = document.getElementById("depositSuccessOverlay");
+    if (overlay) {
+        overlay.classList.remove("show");
+        overlay.setAttribute("aria-hidden", "true");
+    }
+    document.body.style.overflow = "";
+    window.location.assign(document.body.dataset.depositReturn || "/aviator");
+}
+
 
 /* =========================================================
    SET DEPOSIT AMOUNT
@@ -340,11 +390,10 @@ function selectDepositMethod(method) {
     let amount = 0;
 
     if (input) {
-        amount =
-            parseInt(input.value, 10) || 0;
+        amount = Number(input.value);
     }
 
-    if (amount < 10) {
+    if (!Number.isFinite(amount) || amount < 10) {
 
         if (input) {
             input.focus();
@@ -353,17 +402,51 @@ function selectDepositMethod(method) {
         return;
     }
 
-    /*
-     * The popup is currently a front-end UI.
-     * Payment processing can be connected here later.
-     */
+    const status = document.getElementById("depositStatus");
+    if (method !== "Mpesa") {
+        if (status) status.textContent = "Only the M-Pesa test button is connected. Your balance has not changed.";
+        return;
+    }
 
-    console.log(
-        "Deposit method:",
-        method,
-        "Amount:",
-        amount
-    );
+    const buttons = document.querySelectorAll(".deposit-method");
+    buttons.forEach(button => { button.disabled = true; });
+    if (status) status.textContent = "Applying test deposit…";
+
+    fetch("/api/deposits/mpesa-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount })
+    })
+        .then(async response => {
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Deposit failed.");
+
+            const balance = document.getElementById("headerBalance");
+            if (balance) {
+                balance.textContent = Number(data.balance).toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+            if (status) {
+                status.textContent = "";
+            }
+            const successOverlay = document.getElementById("depositSuccessOverlay");
+            const successMessage = document.getElementById("depositSuccessMessage");
+            if (successMessage) {
+                successMessage.textContent = `Thank you for depositing KES ${Number(data.amount).toFixed(2)}. This was a test credit; no real M-Pesa payment was made.`;
+            }
+            closeDeposit();
+            if (successOverlay) {
+                successOverlay.classList.add("show");
+                successOverlay.setAttribute("aria-hidden", "false");
+                document.body.style.overflow = "hidden";
+            }
+        })
+        .catch(error => {
+            if (status) status.textContent = error.message;
+        })
+        .finally(() => buttons.forEach(button => { button.disabled = false; }));
 
 }
 
@@ -466,6 +549,22 @@ function openFullscreen() {
     }
 
 }
+
+function syncFullscreenControl() {
+    const control = document.querySelector(".fullscreen");
+    if (!control) return;
+
+    const active = Boolean(document.fullscreenElement);
+    const label = control.querySelector(".fullscreen-label");
+    const text = active ? "Exit Fullscreen" : "View Fullscreen";
+    control.classList.toggle("is-active", active);
+    control.setAttribute("aria-label", text);
+    control.setAttribute("title", text);
+    if (label) label.textContent = text;
+}
+
+document.addEventListener("fullscreenchange", syncFullscreenControl);
+syncFullscreenControl();
 
 
 /* =========================================================
