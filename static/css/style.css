@@ -211,6 +211,17 @@ body.light-mode {
     color: #f4f4f4;
 }
 
+.bets-tab:focus-visible {
+    outline: 2px solid #f4f4f4;
+    outline-offset: 1px;
+}
+
+.bets-list[hidden],
+.bets-table-head[hidden],
+.all-bets-info[hidden] {
+    display: none !important;
+}
+
 
 /* =========================================================
    BETS SUMMARY
@@ -332,6 +343,181 @@ body.light-mode {
 
 .bets-list::-webkit-scrollbar {
     display: none;
+}
+
+/* Detailed Top tab cards and the compact footer inside the bet panel. */
+.top-bets-list {
+    gap: 5px;
+    padding-top: 3px;
+}
+
+.top-filter-card {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 6px;
+    padding: 4px 5px;
+    border-radius: 14px;
+    background: #1b1c1d;
+}
+
+.top-filter-group {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    flex: 0 0 auto;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.top-filter-group button {
+    min-width: 0;
+    min-height: 30px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: #9da2a5;
+    font: inherit;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.top-filter-group button.active {
+    background: #303234;
+    color: #f4f4f4;
+}
+
+.top-filter-group button:not(.active):hover,
+.top-filter-group button:not(.active):focus-visible {
+    background: transparent;
+    color: #e53945;
+    outline: none;
+}
+
+.top-filter-group button.active,
+.top-filter-group button.active:hover,
+.top-filter-group button.active:focus-visible {
+    background: #303234;
+    color: #f4f4f4;
+}
+
+.top-bet-card {
+    flex: 0 0 auto;
+    padding: 6px 7px;
+    border-radius: 14px;
+    background: #111213;
+}
+
+.top-bet-player {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 6px;
+}
+
+.top-bet-avatar {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 50%;
+    background: #35393b;
+    font-size: 18px;
+}
+
+.top-bet-identity {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    color: #c9ccce;
+    font-size: 10px;
+}
+
+.top-bet-identity strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.top-bet-identity small {
+    color: #798084;
+    font-size: 9px;
+}
+
+.top-bet-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.top-bet-actions i {
+    display: grid;
+    width: 25px;
+    height: 25px;
+    place-items: center;
+    border-radius: 50%;
+    background: #292c2e;
+    color: #aeb2b4;
+    font-size: 13px;
+    font-style: normal;
+}
+
+.top-bet-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px 8px;
+    margin-top: 5px;
+}
+
+.top-bet-details span {
+    display: flex;
+    min-width: 0;
+    justify-content: space-between;
+    gap: 4px;
+    font-size: 9px;
+}
+
+.top-bet-details small {
+    color: #7d8589;
+    white-space: nowrap;
+}
+
+.top-bet-details strong {
+    overflow: hidden;
+    color: #c5c9cb;
+    font-size: 9px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.top-bet-details .top-result {
+    color: #d42bdf;
+}
+
+.bets-panel-footer {
+    display: flex;
+    min-height: 20px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 2px 3px 0;
+    color: #747b7f;
+    font-size: 8px;
+}
+
+.bets-panel-footer b {
+    color: #bdc2c4;
+}
+
+.bets-panel-footer strong {
+    color: #c4c8ca;
+    letter-spacing: 0.04em;
 }
 
 

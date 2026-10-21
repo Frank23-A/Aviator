@@ -99,6 +99,10 @@ toggles.forEach(function(toggle) {
 
         event.stopPropagation();
 
+        // The audio controller owns the Music toggle's state so its visual
+        // state stays in sync with whether the MP3 is actually playing.
+        if (toggle.dataset.setting === "music") return;
+
         toggle.classList.toggle("active");
 
     });

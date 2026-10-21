@@ -180,14 +180,7 @@ function createBetRow(index, totalBets) {
 
 function savePreviousRound() {
 
-    if (!betsList) {
-        return;
-    }
-
-    const rows =
-        Array.from(
-            betsList.querySelectorAll(".bet-row")
-        );
+    const rows = window.currentLiveBets || [];
 
     if (rows.length === 0) {
         return;

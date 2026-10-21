@@ -1,500 +1,96 @@
-/* =========================================
-   BET TABS
-   ALL BETS / PREVIOUS / TOP
-========================================= */
+/* All Bets / Previous tabs. Top rendering lives in top.js. */
+(() => {
+    "use strict";
 
+    const tabs = Array.from(document.querySelectorAll(".bets-tab"));
+    const list = document.getElementById("liveBetsList");
+    const summary = document.querySelector(".all-bets-info");
+    const headings = document.querySelector(".bets-table-head");
 
-/* =========================================
-   GET ELEMENTS
-========================================= */
+    if (!list || tabs.length < 3) return;
 
-const betTabs =
-    document.querySelectorAll(".bets-tab");
-
-const betsList =
-    document.getElementById("liveBetsList");
-
-const allBetsInfo =
-    document.querySelector(".all-bets-info");
-
-const betsTableHead =
-    document.querySelector(".bets-table-head");
-
-
-/* =========================================
-   CURRENT TAB
-========================================= */
-
-let currentBetTab =
-    "all";
-
-
-/* =========================================
-   SAVE LIVE BETS BEFORE CHANGING VIEW
-========================================= */
-
-function saveLiveBeforeSwitch() {
-
-    if (
-        currentBetTab === "all" &&
-        typeof saveCurrentLiveBets === "function"
-    ) {
-
-        saveCurrentLiveBets();
-
+    function setActiveTab(tab) {
+        list.setAttribute("aria-labelledby", tab.id);
+        tabs.forEach((button, index) => {
+            const active = button === tab;
+            button.classList.toggle("active", active);
+            button.setAttribute("aria-selected", String(active));
+            button.tabIndex = active ? 0 : -1;
+        });
     }
 
-}
-
-
-/* =========================================
-   HIDE ALL BET CONTENT
-========================================= */
-
-function hideBetContent() {
-
-    if (allBetsInfo) {
-
-        allBetsInfo.style.display =
-            "none";
-
+    function setListHeader(title) {
+        list.replaceChildren();
+        const header = document.createElement("div");
+        header.className = "previous-round-header";
+        header.textContent = title;
+        list.appendChild(header);
     }
 
+    function rowFromBet(bet) {
+        const row = document.createElement("div");
+        row.className = "bet-row";
+        if (bet.winner) row.classList.add("winner");
 
-    if (betsTableHead) {
-
-        betsTableHead.style.display =
-            "none";
-
+        const player = document.createElement("span");
+        player.className = "player-name";
+        player.textContent = bet.player || "Player";
+        const amount = document.createElement("span");
+        amount.textContent = bet.amount || "";
+        const multiplier = document.createElement("span");
+        multiplier.className = "multiplier-value";
+        multiplier.textContent = bet.multiplier || "";
+        const winnings = document.createElement("span");
+        winnings.textContent = bet.winnings || "";
+        row.append(player, amount, multiplier, winnings);
+        return row;
     }
 
-
-    if (betsList) {
-
-        betsList.style.display =
-            "none";
-
+    function showAllBets() {
+        if (summary) summary.hidden = false;
+        if (headings) headings.hidden = false;
+        list.hidden = false;
+        list.replaceChildren();
+        (window.currentLiveBets || []).forEach(row => list.appendChild(row.cloneNode(true)));
     }
 
-}
-
-
-/* =========================================
-   SHOW ALL BETS
-========================================= */
-
-function showAllBets() {
-
-    currentBetTab =
-        "all";
-
-
-    hideBetContent();
-
-
-    /*
-       Restore the exact live bets
-       instead of generating new ones.
-    */
-
-    if (
-        typeof restoreCurrentLiveBets ===
-        "function"
-    ) {
-
-        restoreCurrentLiveBets();
-
-    }
-
-
-    if (allBetsInfo) {
-
-        allBetsInfo.style.display =
-            "";
-
-    }
-
-
-    if (betsTableHead) {
-
-        betsTableHead.style.display =
-            "";
-
-    }
-
-
-    if (betsList) {
-
-        betsList.style.display =
-            "";
-
-    }
-
-}
-
-
-/* =========================================
-   SHOW PREVIOUS
-========================================= */
-
-function showPreviousBets() {
-
-    currentBetTab =
-        "previous";
-
-
-    saveLiveBeforeSwitch();
-
-
-    hideBetContent();
-
-
-    if (!betsList) {
-
-        return;
-
-    }
-
-
-    /*
-       SAME LIST AREA
-    */
-
-    betsList.style.display =
-        "flex";
-
-
-    betsList.innerHTML =
-        "";
-
-
-    /* -----------------------------------------
-       PREVIOUS HEADER
-    ----------------------------------------- */
-
-    const header =
-        document.createElement("div");
-
-
-    header.className =
-        "previous-round-header";
-
-
-    header.innerHTML = `
-
-        <span>
-            PREVIOUS ROUND
-        </span>
-
-    `;
-
-
-    betsList.appendChild(
-        header
-    );
-
-
-    /* -----------------------------------------
-       CHECK DATA
-    ----------------------------------------- */
-
-    if (
-        !window.previousRoundBets ||
-        window.previousRoundBets.length === 0
-    ) {
-
-        const empty =
-            document.createElement("div");
-
-
-        empty.className =
-            "no-previous-bets";
-
-
-        empty.textContent =
-            "No previous round yet";
-
-
-        betsList.appendChild(
-            empty
-        );
-
-
-        return;
-
-    }
-
-
-    /* -----------------------------------------
-       DISPLAY PREVIOUS BETS
-    ----------------------------------------- */
-
-    window.previousRoundBets.forEach(
-        bet => {
-
-            const row =
-                document.createElement("div");
-
-
-            row.className =
-                "bet-row";
-
-
-            row.innerHTML = `
-
-                <span class="player-name">
-
-                    ${bet.player}
-
-                </span>
-
-
-                <span>
-
-                    ${bet.amount}
-
-                </span>
-
-
-                <span class="multiplier-value">
-
-                    ${bet.multiplier || ""}
-
-                </span>
-
-
-                <span>
-
-                    ${bet.winnings || ""}
-
-                </span>
-
-            `;
-
-
-            if (bet.winner) {
-
-                row.classList.add(
-                    "winner"
-                );
-
-            }
-
-
-            betsList.appendChild(
-                row
-            );
-
+    function showPreviousBets() {
+        if (summary) summary.hidden = true;
+        if (headings) headings.hidden = false;
+        list.hidden = false;
+        setListHeader("PREVIOUS ROUND");
+
+        const bets = window.previousRoundBets || [];
+        if (!bets.length) {
+            const empty = document.createElement("div");
+            empty.className = "no-previous-bets";
+            empty.textContent = "No previous round yet";
+            list.appendChild(empty);
+            return;
         }
-    );
-
-}
-
-
-/* =========================================
-   SHOW TOP BETS
-========================================= */
-
-function showTopBets() {
-
-    currentBetTab =
-        "top";
-
-
-    saveLiveBeforeSwitch();
-
-
-    hideBetContent();
-
-
-    if (!betsList) {
-
-        return;
-
+        bets.forEach(bet => list.appendChild(rowFromBet(bet)));
     }
 
-
-    /*
-       SAME LIST AREA
-    */
-
-    betsList.style.display =
-        "flex";
-
-
-    /*
-       Get saved live bets.
-       DO NOT use the current DOM because
-       Previous/Top may have replaced it.
-    */
-
-    let rows =
-        window.currentLiveBets
-            ? window.currentLiveBets.map(
-                row =>
-                    row.cloneNode(true)
-            )
-            : [];
-
-
-    /* -----------------------------------------
-       SORT BY BET AMOUNT
-    ----------------------------------------- */
-
-    rows.sort(
-        (a, b) => {
-
-            const amountA =
-                parseFloat(
-                    a.children[1]
-                        ?.textContent
-                        .replace(/,/g, "")
-                ) || 0;
-
-
-            const amountB =
-                parseFloat(
-                    b.children[1]
-                        ?.textContent
-                        .replace(/,/g, "")
-                ) || 0;
-
-
-            return amountB - amountA;
-
-        }
-    );
-
-
-    /*
-       Clear SAME list area
-    */
-
-    betsList.innerHTML =
-        "";
-
-
-    /* -----------------------------------------
-       TOP HEADER
-    ----------------------------------------- */
-
-    const header =
-        document.createElement("div");
-
-
-    header.className =
-        "previous-round-header";
-
-
-    header.innerHTML = `
-
-        <span>
-            TOP BETS
-        </span>
-
-    `;
-
-
-    betsList.appendChild(
-        header
-    );
-
-
-    /* -----------------------------------------
-       TOP 10
-    ----------------------------------------- */
-
-    rows
-        .slice(0, 10)
-        .forEach(
-            row => {
-
-                betsList.appendChild(
-                    row
-                );
-
-            }
-        );
-
-}
-
-
-/* =========================================
-   TAB CLICK
-========================================= */
-
-betTabs.forEach(
-    (tab, index) => {
-
-        tab.addEventListener(
-            "click",
-            () => {
-
-                /*
-                   Remove active from all
-                */
-
-                betTabs.forEach(
-                    button => {
-
-                        button.classList.remove(
-                            "active"
-                        );
-
-                    }
-                );
-
-
-                /*
-                   Activate clicked tab
-                */
-
-                tab.classList.add(
-                    "active"
-                );
-
-
-                /*
-                   ALL
-                */
-
-                if (index === 0) {
-
-                    showAllBets();
-
-                }
-
-
-                /*
-                   PREVIOUS
-                */
-
-                else if (index === 1) {
-
-                    showPreviousBets();
-
-                }
-
-
-                /*
-                   TOP
-                */
-
-                else if (index === 2) {
-
-                    showTopBets();
-
-                }
-
-            }
-        );
-
-    }
-);
-
-
-/* =========================================
-   DEFAULT VIEW
-========================================= */
-
-showAllBets();
+    tabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => {
+            setActiveTab(tab);
+            if (index === 0) showAllBets();
+            else if (index === 1) showPreviousBets();
+            else if (typeof window.showTopBets === "function") window.showTopBets();
+        });
+
+        tab.addEventListener("keydown", event => {
+            if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+            event.preventDefault();
+            const direction = event.key === "ArrowRight" ? 1 : -1;
+            const nextIndex = (index + direction + tabs.length) % tabs.length;
+            tabs[nextIndex].focus();
+            tabs[nextIndex].click();
+        });
+    });
+
+    window.showPreviousBets = showPreviousBets;
+    window.showAllBets = showAllBets;
+    setActiveTab(tabs[0]);
+    showAllBets();
+})();

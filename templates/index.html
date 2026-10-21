@@ -11,7 +11,7 @@
 
 </head>
 
-<body>
+<body data-music-url="{{ url_for('static', filename='audio/Aviator.mp3') }}">
 {% include 'header.html' %}
 
 <div class="bar">
@@ -24,10 +24,10 @@
 
 <main class="dashboard-layout">
     <aside class="live-bets-panel">
-        <div class="bets-tabs" role="tablist">
-             <button class="bets-tab active" type="button">All Bets</button>
-             <button class="bets-tab" type="button">Previous </button>
-             <button class="bets-tab" type="button">Top</button>
+        <div class="bets-tabs" role="tablist" aria-label="Bet lists">
+             <button class="bets-tab active" id="allBetsTab" type="button" role="tab" aria-selected="true">All Bets</button>
+             <button class="bets-tab" id="previousBetsTab" type="button" role="tab" aria-selected="false" tabindex="-1">Previous</button>
+             <button class="bets-tab" id="topBetsTab" type="button" role="tab" aria-selected="false" tabindex="-1">Top</button>
         </div>
 
         <div class="all-bets-info">
@@ -43,7 +43,12 @@
         </div>
 
          <!-- SAME AREA USED BY ALL / PREVIOUS / TOP -->
-         <div class="bets-list" id="liveBetsList"></div>
+         <div class="bets-list" id="liveBetsList" role="tabpanel" aria-labelledby="allBetsTab"></div>
+
+        <div class="bets-panel-footer" aria-label="Bet list footer">
+            <span><b>♢</b> Provably Fair Game</span>
+            <span>Powered by <strong>SPRIBE</strong></span>
+        </div>
     </aside>
 
     <section class="dashboard-main" aria-label="Aviator game">
@@ -147,6 +152,7 @@
             </div>
 
         </div>
+        
 
 
         <!-- MUSIC -->
@@ -251,8 +257,10 @@
 <script src="{{ url_for('static', filename='js/aviator.js', v='no-dance-transition-oscillation') }}"></script>
 <script src="{{ url_for('static', filename='js/sidemenu.js') }}"></script>
 <script src="{{ url_for('static', filename='js/betlist.js') }}"></script>
+<script src="{{ url_for('static', filename='js/top.js') }}"></script>
 <script src="{{ url_for('static', filename='js/previous.js') }}"></script>
 <script src="{{ url_for('static', filename='js/header.js') }}"></script>
+<script src="{{ url_for('static', filename='js/game-audio.js') }}"></script>
 
 </body>
 </html>
