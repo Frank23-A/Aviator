@@ -10,7 +10,7 @@
          MAIN HEADER
     ========================================================== -->
 
-    <header class="header">
+    <header class="header" id="siteHeaderMenu">
 
         <!-- TOP ROW -->
 
@@ -23,14 +23,14 @@
                 role="button"
                 tabindex="0"
             >
-                <span></span>
-                <span></span>
-                <span></span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 6h18M3 12h12M3 18h18"></path>
+                </svg>
             </div>
 
             <!-- LOGO -->
 
-            <a href="home.html" class="logo">
+            <a href="{{ url_for('index') }}" class="logo">
                 OziBet!<span>.com</span>
             </a>
 
@@ -144,7 +144,7 @@
 
         <div class="bottom-row">
 
-            <a href="home.html" class="nav-item">Home</a>
+            <a href="{{ url_for('index') }}" class="nav-item">Home</a>
 
             <a href="live.html" class="nav-item">Live (136)</a>
 
@@ -259,6 +259,19 @@
             &nbsp;
             Go Back
         </div>
+
+        <button
+            class="mobile-header-toggle"
+            type="button"
+            onclick="toggleMenu()"
+            aria-label="Open site menu"
+            aria-expanded="false"
+            aria-controls="siteHeaderMenu"
+        >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 6h18M3 12h12M3 18h18"></path>
+            </svg>
+        </button>
 
         <!-- FULLSCREEN -->
 

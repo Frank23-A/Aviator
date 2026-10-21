@@ -19,6 +19,8 @@ const gameScreen = document.getElementById("game");
 
 const loading = document.getElementById("loading");
 const multiplierDisplay = document.getElementById("multiplier");
+const roundResult = document.getElementById("roundResult");
+const roundResultMultiplier = document.getElementById("roundResultMultiplier");
 const rays = document.querySelector(".rays");
 
 
@@ -200,14 +202,14 @@ function addRoundHistory(value) {
     } else if (value < 10) {
         item.classList.add("history-purple");
     } else {
-        item.classList.add("history-green");
+        item.classList.add("history-pink");
     }
 
     item.innerText = Number(value).toFixed(2) + "x";
 
     historyList.prepend(item);
 
-    while (historyList.children.length > 10) {
+    while (historyList.children.length > 50) {
         historyList.removeChild(historyList.lastElementChild);
     }
 }
@@ -285,6 +287,8 @@ function startFlight(crash, roundId = null) {
     // Reset the shared multiplier for betlist.js.
     window.currentAviatorMultiplier = multiplier;
 
+    if (roundResult) roundResult.hidden = true;
+    gameScreen.classList.remove("round-result-active");
     setLoadingVisible(false);
 
     multiplierDisplay.style.display = "block";
@@ -314,6 +318,49 @@ function startFlight(crash, roundId = null) {
 
     // Start the flight.
     interval = setInterval(updateGame, 40);
+}
+
+
+/* =========================================
+   CRASH RESULT AND NEXT COUNTDOWN
+========================================= */
+
+function showCrashResult(crash) {
+    if (roundResultMultiplier) {
+        roundResultMultiplier.textContent = Number(crash).toFixed(2) + "x";
+    }
+    if (roundResult) roundResult.hidden = false;
+    gameScreen.classList.add("round-result-active");
+
+    multiplierDisplay.style.display = "none";
+    plane.style.display = "none";
+    setLoadingVisible(false);
+
+    // Keep the result visible briefly, then show the normal five-second countdown.
+    countdownTimer = setTimeout(() => {
+        countdownTimer = null;
+        if (roundResult) roundResult.hidden = true;
+        gameScreen.classList.remove("round-result-active");
+        setLoadingVisible(true);
+
+        const progress = loading.querySelector(".countdown-progress");
+        if (progress) {
+            progress.style.animation = "none";
+            progress.offsetHeight;
+            progress.style.animation = "countdownProgress 5s linear forwards";
+        }
+
+        countdownTimer = setTimeout(() => {
+            setLoadingVisible(false);
+            countdownTimer = null;
+
+            if (typeof startNewBetRound === "function") {
+                startNewBetRound();
+            }
+
+            startRound();
+        }, 5000);
+    }, 2300);
 }
 
 
@@ -545,49 +592,7 @@ function updateGame() {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        multiplierDisplay.style.display = "none";
-
-        setLoadingVisible(true);
-
-
-        /* =================================
-           COUNTDOWN BAR
-        ================================= */
-
-        const progress =
-            loading.querySelector(".countdown-progress");
-
-        if (progress) {
-            progress.style.animation = "none";
-
-            // Force browser reflow.
-            progress.offsetHeight;
-
-            progress.style.animation =
-                "countdownProgress 5s linear forwards";
-        }
-
-
-        /* =================================
-           START NEXT ROUND AFTER 5 SECONDS
-        ================================= */
-
-        countdownTimer = setTimeout(() => {
-            setLoadingVisible(false);
-
-            countdownTimer = null;
-
-            /*
-               Generate new live bets for the next round.
-            */
-
-            if (typeof startNewBetRound === "function") {
-                startNewBetRound();
-            }
-
-            startRound();
-
-        }, 5000);
+        showCrashResult(crashPoint);
     }
 }
 

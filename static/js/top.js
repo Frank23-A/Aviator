@@ -37,8 +37,9 @@
         const multiplier = multiplierOf(row);
         const win = winningsOf(row);
         const result = multiplier || (win && bet ? win / bet : 0);
+        const ageDays = index % 7;
         const date = new Date();
-        date.setDate(date.getDate() - (index % 7));
+        date.setDate(date.getDate() - ageDays);
         const dateLabel = date.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" });
 
         const card = document.createElement("article");
@@ -55,7 +56,7 @@
                 <span><small>Win KES</small><strong>${win.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></span>
                 <span><small>Round max.</small><strong class="top-result">${(result ? result * (1.02 + (index % 5) * 0.015) : 0).toFixed(2)}x</strong></span>
             </div>`;
-        return { card, bet, result, win };
+        return { card, bet, result, win, ageDays };
     }
 
     function showTopBets() {
@@ -76,7 +77,10 @@
         ], period, value => { period = value; showTopBets(); }));
         list.appendChild(filters);
 
-        const bets = (window.currentLiveBets || []).map(makeCard);
+        const periodDays = { day: 1, month: 30, year: 365 }[period];
+        const bets = (window.currentLiveBets || [])
+            .map(makeCard)
+            .filter(bet => bet.ageDays < periodDays);
         bets.sort((a, b) => metric === "win" ? b.win - a.win : metric === "rounds" ? b.bet - a.bet : b.result - a.result);
         if (!bets.length) {
             const empty = document.createElement("div");

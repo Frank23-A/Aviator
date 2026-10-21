@@ -1,6 +1,8 @@
 /* log out js*/
 
-document.getElementById('logoutButton').addEventListener('click', function () {
+const logoutButton = document.getElementById('logoutButton');
+
+logoutButton?.addEventListener('click', function () {
     fetch('/logout', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'}

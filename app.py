@@ -9,6 +9,7 @@ from functools import wraps
 
 from flask import (
     Flask,
+    abort,
     jsonify,
     redirect,
     render_template,
@@ -17,8 +18,17 @@ from flask import (
     url_for,
 )
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Index, inspect
+from sqlalchemy import Index, URL, inspect
+from sqlalchemy.engine import make_url
 from werkzeug.security import check_password_hash, generate_password_hash
+
+try:
+    from dotenv import load_dotenv
+except ImportError:  # Environment variables can also be supplied by the host.
+    load_dotenv = None
+
+if load_dotenv:
+    load_dotenv()
 
 
 # =========================================================
@@ -27,9 +37,18 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 
-app.config["SECRET_KEY"] = os.getenv(
-    "SECRET_KEY",
-    "aviator-secret-key-change-me"
+APP_ENV = os.getenv("APP_ENV", "development").strip().lower()
+IS_PRODUCTION = APP_ENV == "production"
+secret_key = os.getenv("SECRET_KEY")
+if IS_PRODUCTION and not secret_key:
+    raise RuntimeError("SECRET_KEY must be set when APP_ENV=production.")
+
+app.config.update(
+    SECRET_KEY=secret_key or os.urandom(32),
+    DEBUG=(not IS_PRODUCTION and os.getenv("FLASK_DEBUG", "0") == "1"),
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=IS_PRODUCTION,
 )
 
 
@@ -39,38 +58,50 @@ app.config["SECRET_KEY"] = os.getenv(
 
 mysql_user = os.getenv("MYSQL_USER", "root")
 mysql_password = os.getenv("MYSQL_PASSWORD", "")
-mysql_host = os.getenv("MYSQL_HOST", "localhost")
+mysql_host = os.getenv("MYSQL_HOST", "127.0.0.1")
 mysql_port = os.getenv("MYSQL_PORT", "3306")
 mysql_db = os.getenv("MYSQL_DB", "aviator")
 
 
 def build_database_url():
-
     database_url = os.getenv("DATABASE_URL")
 
     if database_url:
-        return database_url
+        if database_url.startswith("mysql://"):
+            database_url = database_url.replace("mysql://", "mysql+pymysql://", 1)
+        try:
+            parsed_url = make_url(database_url)
+        except Exception as exc:
+            raise RuntimeError("DATABASE_URL is not a valid MySQL connection URL.") from exc
+        if parsed_url.get_backend_name() != "mysql":
+            raise RuntimeError("This app is configured for MySQL only; DATABASE_URL must use MySQL.")
+        if parsed_url.drivername == "mysql":
+            parsed_url = parsed_url.set(drivername="mysql+pymysql")
+        elif parsed_url.drivername != "mysql+pymysql":
+            raise RuntimeError("MySQL must use the PyMySQL driver (mysql+pymysql).")
+        return parsed_url
 
-    # SQLite is the default
-    if os.getenv("USE_SQLITE", "1") == "1":
-        return "sqlite:///aviator.db"
+    if IS_PRODUCTION and not os.getenv("MYSQL_HOST"):
+        raise RuntimeError("Set a MySQL DATABASE_URL or MYSQL_HOST in production.")
 
-    # MySQL
-    if os.getenv("USE_MYSQL", "0") == "1":
+    try:
+        port = int(mysql_port)
+    except ValueError as exc:
+        raise RuntimeError("MYSQL_PORT must be a valid port number.") from exc
 
-        mysql_url = (
-            f"mysql+pymysql://"
-            f"{mysql_user}:{mysql_password}"
-            f"@{mysql_host}:{mysql_port}/{mysql_db}"
-            f"?charset=utf8mb4"
-        )
-
-        return mysql_url
-
-    return "sqlite:///aviator.db"
+    return URL.create(
+        "mysql+pymysql",
+        username=mysql_user,
+        password=mysql_password,
+        host=mysql_host,
+        port=port,
+        database=mysql_db,
+        query={"charset": "utf8mb4"},
+    )
 
 
 app.config["SQLALCHEMY_DATABASE_URI"] = build_database_url()
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -273,8 +304,14 @@ def get_or_create_state():
 # =========================================================
 
 with app.app_context():
-
-    db.create_all()
+    try:
+        db.create_all()
+    except Exception as exc:
+        raise RuntimeError(
+            "Could not initialize the MySQL database. Start MySQL in XAMPP, "
+            "create the configured database (MYSQL_DB), and check MYSQL_HOST, "
+            "MYSQL_PORT, MYSQL_USER, and MYSQL_PASSWORD."
+        ) from exc
 
     # Add phone login support to databases created before phone numbers were
     # part of the account model. Existing users can add a number from Profile.
@@ -325,6 +362,22 @@ def login_required(f):
             return redirect(
                 url_for("login_page")
             )
+
+        return f(*args, **kwargs)
+
+    return wrapper
+
+
+def admin_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        user = current_user()
+        if not user:
+            return redirect(url_for("login_page"))
+
+        admin_phone = normalize_phone_number(os.getenv("ADMIN_PHONE", ""))
+        if not admin_phone or user.phone != admin_phone:
+            abort(403)
 
         return f(*args, **kwargs)
 
@@ -617,7 +670,7 @@ def settle_round_bets():
 # =========================================================
 
 @app.route("/admin")
-@login_required
+@admin_required
 def admin():
 
     return render_template(
@@ -630,6 +683,7 @@ def admin():
 # =========================================================
 
 @app.route("/admin_data")
+@admin_required
 def admin_data():
 
     state = get_or_create_state()
@@ -798,8 +852,8 @@ def login_page():
                 )
             }), 401
 
+        session.clear()
         session["user_id"] = user.id
-
         session["username"] = user.username
 
         if request.is_json:
@@ -908,8 +962,8 @@ def me():
 @app.route("/api/deposits/mpesa-test", methods=["POST"])
 def mpesa_test_deposit():
     # This endpoint only simulates a successful provider confirmation. Keep it
-    # unavailable outside debug/testing so it cannot credit a live account.
-    if not app.debug and not app.testing:
+    # unavailable in production so it cannot credit a live account.
+    if IS_PRODUCTION and not app.testing:
         return jsonify({"error": "M-Pesa test deposits are disabled."}), 403
 
     user_id = session.get("user_id")
@@ -942,6 +996,7 @@ def mpesa_test_deposit():
 # =========================================================
 
 @app.route("/users")
+@admin_required
 def users():
 
     users = User.query.order_by(
@@ -974,11 +1029,12 @@ def users():
 # =========================================================
 
 @app.route("/game_history")
+@login_required
 def game_history():
 
     history = GameHistory.query.order_by(
         GameHistory.id.desc()
-    ).all()
+    ).filter_by(user_id=current_user().id).all()
 
     return jsonify({
 
@@ -1018,7 +1074,7 @@ def play_game():
 if __name__ == "__main__":
 
     app.run(
-        debug=True,
-        host="127.0.0.1",
-        port=5000
+        debug=app.config["DEBUG"],
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", "5000")),
     )

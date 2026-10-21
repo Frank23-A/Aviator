@@ -244,9 +244,14 @@ window.addEventListener(
 ========================================================= */
 
 function toggleMenu() {
+    const siteHeader = document.getElementById("siteHeader");
+    if (!siteHeader) return;
 
-    alert("Menu clicked");
-
+    const isOpen = siteHeader.classList.toggle("mobile-menu-open");
+    document.querySelectorAll(".mobile-header-toggle, .hamburger").forEach(button => {
+        button.setAttribute("aria-expanded", String(isOpen));
+        button.setAttribute("aria-label", isOpen ? "Close site menu" : "Open site menu");
+    });
 }
 
 

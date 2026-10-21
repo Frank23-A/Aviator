@@ -148,7 +148,7 @@ body.light-mode {
     padding: 4px 9px;
     background: #771525;
     color: #fff;
-    font-size: 11px;
+    font-size: 12px;
     cursor: pointer;
 }
 
@@ -2929,6 +2929,193 @@ canvas {
 
 }
 
+/* Aviator promo strip and compact, extended round history. */
+.dashboard-main {
+    grid-template-rows: 40px 24px minmax(170px, 1fr) clamp(132px, 29%, 190px);
+    gap: 6px;
+}
+
+.aviator-promo-banner {
+    min-width: 0;
+    height: 40px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) 30px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px 0 10px;
+    border: 1px solid #f0522d;
+    border-radius: 20px;
+    background: linear-gradient(100deg, #343638, #29372e 70%, #29382e);
+    color: #e9e9e9;
+}
+
+.aviator-promo-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    border-radius: 16px;
+    background: #414346;
+    color: #eef0f1;
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.aviator-promo-live i {
+    width: 10px;
+    height: 10px;
+    border: 1px solid #8df79a;
+    border-radius: 50%;
+    position: relative;
+}
+
+.aviator-promo-live i::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    border-radius: 50%;
+    background: #42d85b;
+}
+
+.aviator-promo-banner strong {
+    min-width: 0;
+    overflow: hidden;
+    color: #dedede;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.aviator-promo-arrow {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #ffc21b;
+    color: #171717;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.round-history {
+    height: 24px;
+    gap: 8px;
+    padding: 0 1px;
+}
+
+.history-list {
+    gap: 10px;
+}
+
+.history-item {
+    font-size: 10px;
+    font-weight: 400;
+}
+
+.history-blue {
+    color: #20c9ff;
+}
+
+.history-purple {
+    color: #8c42ff;
+}
+
+.history-pink {
+    color: #e522d4;
+}
+
+.history-more {
+    width: 23px;
+    height: 20px;
+}
+
+@media (max-width: 650px) {
+    .dashboard-layout {
+        height: auto;
+    }
+
+    .dashboard-main,
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px clamp(104px, 32vw, 150px) 220px;
+        min-height: calc(40px + 24px + clamp(104px, 32vw, 150px) + 220px + 24px);
+        gap: 8px;
+    }
+
+    .aviator-promo-banner {
+        grid-template-columns: auto minmax(0, 1fr) 27px;
+        gap: 5px;
+        padding-left: 6px;
+    }
+
+    .aviator-promo-banner strong {
+        font-size: 10px;
+    }
+
+    .aviator-promo-arrow {
+        width: 27px;
+        height: 27px;
+    }
+
+    .history-list {
+        gap: 8px;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .history-list::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+@media (max-width: 390px) {
+    .dashboard-main,
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px clamp(104px, 32vw, 140px) 200px;
+        min-height: calc(40px + 24px + clamp(104px, 32vw, 140px) + 200px + 24px);
+    }
+
+    .aviator-promo-live {
+        gap: 4px;
+        padding-inline: 6px;
+        font-size: 9px;
+    }
+
+    .history-list {
+        gap: 6px;
+    }
+}
+
+/* The top ribbon and history get dedicated rows; preserve the bet-card row. */
+.dashboard-main.has-auto-options {
+    grid-template-rows: 40px 24px minmax(170px, 1fr) clamp(132px, 29%, 190px);
+}
+
+@media (max-width: 650px) {
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px clamp(104px, 32vw, 150px) 290px;
+        min-height: calc(40px + 24px + clamp(104px, 32vw, 150px) + 290px + 24px);
+    }
+
+    .bottom-cards.has-auto-options {
+        height: 290px;
+    }
+}
+
+@media (max-width: 390px) {
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px clamp(104px, 32vw, 140px) 270px;
+        min-height: calc(40px + 24px + clamp(104px, 32vw, 140px) + 270px + 24px);
+    }
+
+    .bottom-cards.has-auto-options {
+        height: 270px;
+    }
+}
 
 /* =========================================================
    SMALLER 380px
@@ -3824,7 +4011,7 @@ canvas {
         height: auto;
         min-height: calc(100dvh - 42px);
         grid-template-rows: max-content max-content;
-        row-gap: 16px;
+        row-gap: 6px;
     }
 
     .dashboard-main {
@@ -3871,7 +4058,7 @@ canvas {
         height: min(58dvh, 390px);
         max-height: calc(100dvh - 32px);
         min-height: 280px;
-        margin-top: 16px;
+        margin-top: 4px;
     }
 
     .bets-list {
@@ -4234,6 +4421,44 @@ canvas {
     grid-template-columns: minmax(24px, 0.8fr) minmax(48px, 1.6fr) minmax(24px, 0.8fr);
 }
 
+/* Keep the regular game background and rays behind the crash result. */
+.game-screen.round-result-active #plane,
+.game-screen.round-result-active #trail {
+    display: none !important;
+}
+
+.round-result[hidden] {
+    display: none !important;
+}
+
+.round-result {
+    position: absolute;
+    z-index: 8;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 20px;
+    text-align: center;
+}
+
+.round-result-label {
+    color: #f5f5f5;
+    font-size: clamp(17px, 2.2vw, 25px);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+}
+
+.round-result strong {
+    color: #d20b2f;
+    max-width: 100%;
+    font-size: clamp(34px, 5vw, 52px);
+    font-weight: 700;
+    line-height: 1;
+}
+
 @media (max-width: 650px) {
     .bottom-card {
         grid-template-rows: 26px minmax(50px, 1fr) auto;
@@ -4333,5 +4558,351 @@ canvas {
 
     .bottom-cards.has-auto-options {
         height: 270px;
+    }
+}
+
+
+/* Final Aviator screen layout: promo, history, game, then unchanged bet cards. */
+.dashboard-layout { height: calc(80dvh - 38px); }
+.dashboard-main,
+.dashboard-main.has-auto-options {
+    grid-template-rows: 40px 24px minmax(170px, 1fr) clamp(132px, 29%, 190px);
+}
+.dashboard-main.has-auto-options {
+    grid-template-rows: 40px 24px minmax(120px, 1fr) clamp(180px, 38%, 230px);
+}
+@media (max-width: 900px) and (min-width: 651px) {
+    .dashboard-main,
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px minmax(150px, 1fr) clamp(126px, 27%, 170px);
+    }
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px minmax(110px, 1fr) clamp(170px, 34%, 210px);
+    }
+}
+@media (max-width: 650px) {
+    .dashboard-layout { height: auto; }
+    .dashboard-main,
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px clamp(104px, 32vw, 150px) 220px;
+        min-height: calc(40px + 24px + clamp(104px, 32vw, 150px) + 220px + 24px);
+    }
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px clamp(104px, 32vw, 150px) 290px;
+        min-height: calc(40px + 24px + clamp(104px, 32vw, 150px) + 290px + 24px);
+    }
+    .bottom-cards.has-auto-options { height: 290px; }
+}
+@media (max-width: 390px) {
+    .dashboard-main,
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px clamp(104px, 32vw, 140px) 200px;
+        min-height: calc(40px + 24px + clamp(104px, 32vw, 140px) + 200px + 24px);
+    }
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px clamp(104px, 32vw, 140px) 270px;
+        min-height: calc(40px + 24px + clamp(104px, 32vw, 140px) + 270px + 24px);
+    }
+    .bottom-cards.has-auto-options { height: 270px; }
+}
+
+/* Keep the promotion as a clearly visible full-width card. */
+.aviator-promo-banner {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    min-height: 40px;
+    height: 40px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    column-gap: 8px;
+    padding-inline: 6px;
+    visibility: visible;
+    opacity: 1;
+    border: 1px solid rgba(232, 111, 76, 0.8);
+    border-radius: 24px;
+    background: linear-gradient(100deg, #303638 0%, #29372f 52%, #2d3a31 100%);
+    box-shadow: none;
+}
+
+.aviator-promo-live {
+    grid-column: 1;
+    justify-self: start;
+    gap: 5px;
+    padding: 5px 10px;
+    border: 1px solid rgba(255,  255, 255, 0.1);
+    border-radius: 18px;
+    background: #505258;
+    color: #f5f5f6;
+    font-size: 10px;
+    line-height: 1;
+}
+
+.aviator-promo-live-icon {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+    overflow: visible;
+}
+
+.aviator-promo-live-icon circle {
+    fill: none;
+    stroke: #6bea80;
+    stroke-width: 1.4;
+}
+
+.aviator-promo-live-icon path {
+    fill: #6bea80;
+}
+
+.aviator-promo-banner strong {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: center;
+}
+
+.aviator-promo-arrow {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #ffc21b;
+    box-shadow: 0 1px 5px rgba(255, 194, 27, 0.35);
+}
+
+.aviator-promo-arrow svg {
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: #171717;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.aviator-promo-banner {
+    column-gap: 3px;
+}
+
+.aviator-promo-banner strong {
+    font-size: 11px;
+    letter-spacing: -0.15px;
+    color: #fff;
+}
+
+/* Slightly favor the play area while keeping enough room for bet controls. */
+.dashboard-main {
+    grid-template-rows: 40px 24px minmax(210px, 1fr) clamp(90px, 18%, 135px);
+}
+
+.dashboard-main.has-auto-options {
+    grid-template-rows: 40px 24px minmax(180px, 1fr) clamp(170px, 31%, 205px);
+}
+
+.aviator-promo-banner {
+    animation: promo-rim-glow 0.85s ease-in-out infinite alternate;
+}
+
+@keyframes promo-rim-glow {
+    from {
+        border-color: rgba(232, 111, 76, 0.45);
+        box-shadow: 0 0 3px rgba(232, 111, 76, 0.2);
+    }
+    to {
+        border-color: rgba(255, 130, 92, 0.95);
+        box-shadow: 0 0 10px rgba(232, 82, 49, 0.72);
+    }
+}
+
+@media (max-width: 900px) and (min-width: 651px) {
+    .dashboard-main {
+        grid-template-rows: 40px 24px minmax(180px, 1fr) clamp(85px, 17%, 125px);
+    }
+
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px minmax(150px, 1fr) clamp(160px, 29%, 190px);
+    }
+}
+
+@media (max-width: 650px) {
+    .dashboard-main {
+        grid-template-rows: 40px 24px clamp(110px, 34vw, 160px) 205px;
+        min-height: calc(40px + 24px + clamp(110px, 34vw, 160px) + 205px + 24px);
+    }
+
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px clamp(110px, 34vw, 160px) 275px;
+        min-height: calc(40px + 24px + clamp(110px, 34vw, 160px) + 275px + 24px);
+    }
+
+    .bottom-cards { height: 205px; }
+    .bottom-cards.has-auto-options { height: 275px; }
+}
+
+@media (max-width: 390px) {
+    .dashboard-main {
+        grid-template-rows: 40px 24px clamp(104px, 32vw, 140px) 190px;
+        min-height: calc(40px + 24px + clamp(104px, 32vw, 140px) + 190px + 24px);
+    }
+
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px clamp(104px, 32vw, 140px) 260px;
+        min-height: calc(40px + 24px + clamp(104px, 32vw, 140px) + 260px + 24px);
+    }
+
+    .bottom-cards { height: 190px; }
+    .bottom-cards.has-auto-options { height: 260px; }
+}
+
+/* Auto mode needs a stable card row for tabs, stake controls and options. */
+.dashboard-main.has-auto-options {
+    grid-template-rows: 40px 24px minmax(150px, 1fr) clamp(170px, 31%, 200px);
+}
+
+.bottom-card.auto-mode {
+    grid-template-rows: 32px minmax(70px, 1fr) auto;
+    row-gap: 8px;
+    padding: 12px 8px 7px;
+}
+
+.bottom-card.auto-mode .bet-main-row {
+    min-height: 70px;
+}
+
+@media (max-width: 900px) and (min-width: 651px) {
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px minmax(135px, 1fr) clamp(165px, 30%, 190px);
+    }
+}
+
+@media (max-width: 650px) {
+    .bottom-card.auto-mode {
+        grid-template-rows: 31px minmax(50px, 1fr) auto;
+        row-gap: 9px;
+        padding: 9px 7px 5px;
+    }
+
+    .bottom-card.auto-mode .bet-main-row {
+        min-height: 50px;
+    }
+
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px clamp(110px, 34vw, 160px) 300px;
+        min-height: calc(40px + 24px + clamp(110px, 34vw, 160px) + 300px + 24px);
+    }
+
+    .bottom-cards.has-auto-options {
+        height: 300px;
+    }
+
+    html,
+    body {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+}
+
+@media (max-width: 390px) {
+    .bottom-card.auto-mode {
+        grid-template-rows: 28px minmax(46px, 1fr) auto;
+        row-gap: 7px;
+        padding: 7px 5px 4px;
+    }
+
+    .bottom-card.auto-mode .bet-main-row {
+        min-height: 46px;
+    }
+
+    .dashboard-main.has-auto-options {
+        grid-template-rows: 40px 24px clamp(104px, 32vw, 140px) 280px;
+        min-height: calc(40px + 24px + clamp(104px, 32vw, 140px) + 280px + 24px);
+    }
+
+    .bottom-cards.has-auto-options {
+        height: 280px;
+    }
+}
+
+@media (max-width: 650px) {
+    #siteHeader {
+        position: relative;
+        z-index: 100;
+    }
+
+    #siteHeader .header {
+        display: none !important;
+    }
+
+    #siteHeader.mobile-menu-open .header {
+        position: absolute;
+        top: 42px;
+        left: 0;
+        z-index: 1000;
+        display: block !important;
+        width: 100%;
+        min-height: 0;
+        height: auto;
+        overflow: visible;
+        border: 1px solid #344252 !important;
+        border-radius: 0;
+        background: #121d29;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45) !important;
+    }
+
+    #siteHeader .below-header {
+        position: relative;
+        z-index: 1001;
+        display: flex;
+        min-height: 42px;
+        height: 42px;
+        align-items: center;
+    }
+
+    .mobile-header-toggle {
+        width: 26px;
+        height: 28px;
+        display: grid;
+        flex: 0 0 26px;
+        place-items: center;
+        margin-left: 4px;
+        padding: 0;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: #9a9da1;
+        cursor: pointer;
+    }
+
+    .mobile-header-toggle svg {
+        display: block;
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.7;
+        stroke-linecap: round;
+    }
+
+    .mobile-header-toggle:focus-visible {
+        outline: 2px solid #ffc21b;
+        outline-offset: 2px;
+    }
+}
+
+@media (min-width: 651px) {
+    .mobile-header-toggle {
+        display: none;
     }
 }
