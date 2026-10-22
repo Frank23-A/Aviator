@@ -21,6 +21,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Index, URL, inspect
 from sqlalchemy.engine import make_url
 from werkzeug.security import check_password_hash, generate_password_hash
+import click
 
 try:
     from dotenv import load_dotenv
@@ -106,6 +107,53 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+
+
+def configured_admin_phones():
+    """Return normalized admin numbers from ADMIN_PHONE(S) environment values."""
+    configured = [os.getenv("ADMIN_PHONE", "")]
+    configured.extend(os.getenv("ADMIN_PHONES", "").split(","))
+    return {
+        normalized
+        for value in configured
+        if (normalized := normalize_phone_number(value))
+    }
+
+
+@app.cli.command("create-admin")
+@click.option("--phone", prompt=True, help="Admin phone number in international or Kenyan local format.")
+@click.option("--username", prompt=True, help="Admin username.")
+@click.option("--email", prompt=True, help="Admin email address.")
+@click.password_option(confirmation_prompt=True)
+def create_admin_command(phone, username, email, password):
+    """Create an admin account with a login-compatible password hash."""
+    normalized_phone = normalize_phone_number(phone)
+    if not normalized_phone:
+        raise click.ClickException("Enter a valid phone number.")
+    if normalized_phone not in configured_admin_phones():
+        raise click.ClickException(
+            "This phone is not listed in ADMIN_PHONE or ADMIN_PHONES in .env. "
+            "Add it there, then run the command again."
+        )
+
+    existing_user = User.query.filter(
+        (User.phone == normalized_phone)
+        | (User.username == username.strip())
+        | (User.email == email.strip())
+    ).first()
+    if existing_user:
+        raise click.ClickException("That phone number, username, or email is already registered.")
+
+    admin_user = User(
+        username=username.strip(),
+        email=email.strip(),
+        phone=normalized_phone,
+        password_hash=generate_password_hash(password),
+        balance=0.0,
+    )
+    db.session.add(admin_user)
+    db.session.commit()
+    click.echo(f"Admin account created for {normalized_phone}.")
 
 
 # =========================================================
@@ -375,8 +423,7 @@ def admin_required(f):
         if not user:
             return redirect(url_for("login_page"))
 
-        admin_phone = normalize_phone_number(os.getenv("ADMIN_PHONE", ""))
-        if not admin_phone or user.phone != admin_phone:
+        if user.phone not in configured_admin_phones():
             abort(403)
 
         return f(*args, **kwargs)

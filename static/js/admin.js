@@ -1,45 +1,22 @@
-
-let fallbackPrediction = null;
 const predictionDisplay = document.getElementById("value");
+const messageDisplay = document.getElementById("message");
 
-function update() {
-    fetch("/admin_data")
-        .then(response => {
-            if (!response.ok) throw new Error("Could not load the prediction.");
-            return response.json();
-        })
-        .then(data => {
-            if (predictionDisplay && Number.isFinite(Number(data.next_crash))) {
-                predictionDisplay.textContent = `${data.next_crash}x`;
-            }
-        })
-        .catch(() => {
-            if (predictionDisplay) {
-                predictionDisplay.textContent = `${generateLocalPrediction().toFixed(2)}x`;
-            }
-        });
+async function refreshNextRound() {
+    try {
+        const response = await fetch("/admin_data", { cache: "no-store" });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Could not load the next round.");
+
+        const value = Number(data.next_crash);
+        if (!Number.isFinite(value)) throw new Error("Next round value is unavailable.");
+
+        predictionDisplay.textContent = `${value.toFixed(2)}x`;
+        messageDisplay.textContent = "Updates automatically when a new round is scheduled.";
+    } catch (error) {
+        predictionDisplay.textContent = "Unavailable";
+        messageDisplay.textContent = error.message;
+    }
 }
 
-function generateLocalPrediction() {
-    if (fallbackPrediction !== null) {
-        return fallbackPrediction
-    }
-
-    const r = Math.random();
-    let prediction = Math.round((1 / (1 - r)) * 100) / 100;
-
-    if (prediction > 100) {
-        prediction = 100
-    }
-
-    if (prediction < 2) {
-        prediction = 2 + Math.random() * 2
-    }
-
-    fallbackPrediction = prediction;
-    return fallbackPrediction
-}
-
-window.setInterval(update, 1000);
-
-update();
+refreshNextRound();
+window.setInterval(refreshNextRound, 1000);
