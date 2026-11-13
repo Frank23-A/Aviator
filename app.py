@@ -3,7 +3,11 @@ import os
 import random
 import math
 import re
-from datetime import datetime
+import secrets
+import hashlib
+import shutil
+import subprocess
+from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from functools import wraps
 
@@ -18,7 +22,7 @@ from flask import (
     url_for,
 )
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Index, URL, inspect
+from sqlalchemy import Index, URL, func, inspect
 from sqlalchemy.engine import make_url
 from werkzeug.security import check_password_hash, generate_password_hash
 import click
@@ -41,8 +45,8 @@ app = Flask(__name__)
 APP_ENV = os.getenv("APP_ENV", "development").strip().lower()
 IS_PRODUCTION = APP_ENV == "production"
 secret_key = os.getenv("SECRET_KEY")
-if IS_PRODUCTION and not secret_key:
-    raise RuntimeError("SECRET_KEY must be set when APP_ENV=production.")
+if IS_PRODUCTION and (not secret_key or len(secret_key) < 32):
+    raise RuntimeError("Set SECRET_KEY to a private random value of at least 32 characters in production.")
 
 app.config.update(
     SECRET_KEY=secret_key or os.urandom(32),
@@ -50,6 +54,7 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=IS_PRODUCTION,
+    MAX_CONTENT_LENGTH=16 * 1024,
 )
 
 
@@ -80,10 +85,19 @@ def build_database_url():
             parsed_url = parsed_url.set(drivername="mysql+pymysql")
         elif parsed_url.drivername != "mysql+pymysql":
             raise RuntimeError("MySQL must use the PyMySQL driver (mysql+pymysql).")
+        if IS_PRODUCTION and not parsed_url.password:
+            raise RuntimeError("DATABASE_URL must include a password in production.")
         return parsed_url
 
-    if IS_PRODUCTION and not os.getenv("MYSQL_HOST"):
-        raise RuntimeError("Set a MySQL DATABASE_URL or MYSQL_HOST in production.")
+    if IS_PRODUCTION:
+        missing_mysql_settings = [
+            name for name in ("MYSQL_HOST", "MYSQL_USER", "MYSQL_PASSWORD", "MYSQL_DB")
+            if not os.getenv(name)
+        ]
+        if missing_mysql_settings:
+            raise RuntimeError(
+                "Set DATABASE_URL or all MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, and MYSQL_DB values in production."
+            )
 
     try:
         port = int(mysql_port)
@@ -109,6 +123,17 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
+@app.after_request
+def add_security_headers(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    if request.is_secure or IS_PRODUCTION:
+        response.headers.setdefault("Strict-Transport-Security", "max-age=31536000")
+    return response
+
+
 def configured_admin_phones():
     """Return normalized admin numbers from ADMIN_PHONE(S) environment values."""
     configured = [os.getenv("ADMIN_PHONE", "")]
@@ -127,6 +152,9 @@ def configured_admin_phones():
 @click.password_option(confirmation_prompt=True)
 def create_admin_command(phone, username, email, password):
     """Create an admin account with a login-compatible password hash."""
+    if not 6 <= len(password) <= 8:
+        raise click.ClickException("Use a password between 6 and 8 characters.")
+
     normalized_phone = normalize_phone_number(phone)
     if not normalized_phone:
         raise click.ClickException("Enter a valid phone number.")
@@ -206,6 +234,20 @@ class User(db.Model):
         backref="user",
         lazy=True
     )
+
+
+class ActiveLogin(db.Model):
+    """The single currently valid browser login for each user."""
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    token = db.Column(db.String(128), nullable=False)
+
+
+class TabLogin(db.Model):
+    """A login token scoped to one browser tab instead of the shared cookie."""
+    token_hash = db.Column(db.String(64), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    expires_at = db.Column(db.DateTime, nullable=False, index=True)
+    last_seen_at = db.Column(db.DateTime, nullable=True)
 
 
 def normalize_phone_number(value):
@@ -373,6 +415,23 @@ with app.app_context():
                 f"ALTER TABLE {quoted_table} ADD COLUMN phone VARCHAR(32)"
             )
 
+    tab_login_table = TabLogin.__table__
+    tab_login_columns = {
+        column["name"] for column in inspect(db.engine).get_columns(tab_login_table.name)
+    }
+    if "last_seen_at" not in tab_login_columns:
+        quoted_table = db.engine.dialect.identifier_preparer.quote(tab_login_table.name)
+        with db.engine.begin() as connection:
+            connection.exec_driver_sql(
+                f"ALTER TABLE {quoted_table} ADD COLUMN last_seen_at DATETIME NULL"
+            )
+
+    duplicate_phone_count = db.session.query(User.phone).filter(User.phone.isnot(None)).group_by(User.phone).having(func.count(User.id) > 1).count()
+    if duplicate_phone_count:
+        raise RuntimeError(
+            "Duplicate phone numbers already exist in the user table. Deduplicate them before enabling the unique phone index."
+        )
+
     phone_index = Index("ix_user_phone", User.phone, unique=True)
     phone_index.create(bind=db.engine, checkfirst=True)
 
@@ -384,16 +443,52 @@ with app.app_context():
 # =========================================================
 
 def current_user():
+    tab_token = request.headers.get("X-Tab-Token") or request.args.get("tab_token")
+    if tab_token:
+        token_hash = hashlib.sha256(tab_token.encode("utf-8")).hexdigest()
+        tab_login = db.session.get(TabLogin, token_hash)
+        if not tab_login or tab_login.expires_at <= datetime.utcnow():
+            return None
+        return db.session.get(User, tab_login.user_id)
 
     user_id = session.get("user_id")
 
     if not user_id:
         return None
 
-    return db.session.get(
-        User,
-        user_id
-    )
+    user = db.session.get(User, user_id)
+    active_login = db.session.get(ActiveLogin, user_id)
+    if not user or not active_login or session.get("active_login_token") != active_login.token:
+        session.clear()
+        session["session_ended"] = True
+        return None
+
+    return user
+
+
+@app.before_request
+def enforce_single_browser_session():
+    if request.endpoint in {"login_page", "static"}:
+        return None
+
+    if request.headers.get("X-Tab-Token") or request.args.get("tab_token"):
+        if current_user():
+            return None
+        if request.path.startswith("/api/") or request.is_json:
+            return jsonify({"error": "This tab's login has expired. Please sign in again.",
+                            "session_ended": True}), 401
+        return redirect(url_for("login_page", session_ended="1"))
+
+    if not session.get("user_id"):
+        return None
+
+    if current_user():
+        return None
+
+    if request.path.startswith("/api/") or request.is_json:
+        return jsonify({"error": "Your session has ended because this account signed in on another browser.",
+                        "session_ended": True}), 401
+    return redirect(url_for("login_page", session_ended="1"))
 
 
 # =========================================================
@@ -543,13 +638,50 @@ def crash():
     if not api_logged_in_user():
         return jsonify({"error": "Log in to start a game round."}), 401
 
-    state = get_or_create_state()
+    # Lock the shared state row so simultaneous requests from different users
+    # cannot create and consume multiple rounds at once.
+    state = GameState.query.with_for_update().first()
+    if state is None:
+        state = get_or_create_state()
+        state = GameState.query.with_for_update().first()
 
+    round_row = GameRound.query.order_by(GameRound.id.desc()).with_for_update().first()
+    if round_row:
+        current_multiplier = server_round_multiplier(round_row)
+        if current_multiplier < round_row.crash_point:
+            # All browsers join the same active round; a page load must not
+            # consume another scheduled multiplier.
+            return jsonify({
+                "crash": round_row.crash_point,
+                "round_id": round_row.id,
+                "multiplier": current_multiplier,
+                "started_at": round_row.started_at.isoformat() + "Z",
+                "elapsed": max(0.0, (datetime.utcnow() - round_row.started_at).total_seconds()),
+                "crashed": False,
+            })
+
+        crash_time = round_row.started_at + timedelta(
+            seconds=max(0, (round_row.crash_point - 1) / 0.25)
+        )
+        next_start_in = max(0.0, 7.3 - (datetime.utcnow() - crash_time).total_seconds())
+        if next_start_in > 0:
+            # Keep a single shared crash result/countdown for clients joining
+            # during the transition; don't start the following round early.
+            return jsonify({
+                "crash": round_row.crash_point,
+                "round_id": round_row.id,
+                "multiplier": round_row.crash_point,
+                "started_at": round_row.started_at.isoformat() + "Z",
+                "crashed": True,
+                "next_start_in": next_start_in,
+            })
+
+    # Only create the next round after the previous round has crashed.
     current = state.next_crash
-
     state.next_crash = generate_crash()
     round_row = GameRound(crash_point=current)
     db.session.add(round_row)
+    db.session.flush()
 
     # Bets queued during the previous flight join this round after countdown.
     queued_bets = Wager.query.filter_by(status="queued").all()
@@ -561,18 +693,76 @@ def crash():
 
     return jsonify({
         "crash": current,
-        "round_id": round_row.id
+        "round_id": round_row.id,
+        "multiplier": 1.0,
+        "started_at": round_row.started_at.isoformat() + "Z",
+        "crashed": False,
     })
 
 
 def api_logged_in_user():
-    user_id = session.get("user_id")
-    return db.session.get(User, user_id) if user_id else None
+    return current_user()
 
 
 def server_round_multiplier(round_row):
     elapsed = max(0.0, (datetime.utcnow() - round_row.started_at).total_seconds())
     return math.floor((1 + elapsed * 0.25) * 100) / 100
+
+
+@app.route("/api/round/<int:round_id>")
+@login_required
+def round_status(round_id):
+    round_row = db.session.get(GameRound, round_id)
+    if not round_row:
+        return jsonify({"error": "Game round not found."}), 404
+    multiplier = server_round_multiplier(round_row)
+    crashed = multiplier >= round_row.crash_point
+    next_start_in = None
+    if crashed:
+        crash_time = round_row.started_at + timedelta(
+            seconds=max(0, (round_row.crash_point - 1) / 0.25)
+        )
+        next_start_in = max(0.0, 7.3 - (datetime.utcnow() - crash_time).total_seconds())
+    return jsonify({
+        "round_id": round_row.id,
+        "multiplier": round_row.crash_point if crashed else multiplier,
+        "started_at": round_row.started_at.isoformat() + "Z",
+        "crashed": crashed,
+        "elapsed": max(0.0, (datetime.utcnow() - round_row.started_at).total_seconds()),
+        "next_start_in": next_start_in,
+    })
+
+
+@app.route("/api/round-history")
+@login_required
+def round_history():
+    """Return recent completed crash multipliers for the shared game history."""
+    rows = GameRound.query.order_by(GameRound.id.desc()).limit(150).all()
+    history = [
+        row.crash_point
+        for row in rows
+        if server_round_multiplier(row) >= row.crash_point
+    ][:50]
+    return jsonify({"history": history})
+
+
+@app.route("/api/session-status")
+def session_status():
+    user = current_user()
+    if not user:
+        return jsonify({"error": "Your session has ended.", "session_ended": True}), 401
+
+    tab_token = request.headers.get("X-Tab-Token") or request.args.get("tab_token")
+    if tab_token:
+        token_hash = hashlib.sha256(tab_token.encode("utf-8")).hexdigest()
+        tab_login = db.session.get(TabLogin, token_hash)
+        if tab_login:
+            now = datetime.utcnow()
+            if not tab_login.last_seen_at or tab_login.last_seen_at <= now - timedelta(seconds=30):
+                tab_login.last_seen_at = now
+                db.session.commit()
+
+    return jsonify({"active": True})
 
 
 def write_game_result(user, wager, result, multiplier):
@@ -600,36 +790,40 @@ def place_bet():
     if not amount.is_finite() or amount < Decimal("1") or amount > Decimal("1000000"):
         return jsonify({"error": "Bet amount must be between USD 1 and USD 1,000,000."}), 400
 
-    round_row = db.session.get(GameRound, round_id)
-    if not round_row:
+    if not db.session.get(GameRound, round_id):
         return jsonify({"error": "Game round not found. Wait for the next round."}), 404
 
-    current_multiplier = server_round_multiplier(round_row)
-    if current_multiplier >= round_row.crash_point:
-        return jsonify({"error": "This round has crashed. Wait for the next round."}), 409
+    with db.session.begin():
+        user = User.query.with_for_update().filter_by(id=user.id).first()
+        round_row = GameRound.query.with_for_update().filter_by(id=round_id).first()
+        if not round_row:
+            return jsonify({"error": "Game round not found. Wait for the next round."}), 404
 
-    active_count = Wager.query.filter(
-        Wager.user_id == user.id,
-        Wager.status.in_(("active", "queued")),
-    ).count()
-    if active_count >= 2:
-        return jsonify({"error": "You already have two active bets this round."}), 409
+        current_multiplier = server_round_multiplier(round_row)
+        if current_multiplier >= round_row.crash_point:
+            return jsonify({"error": "This round has crashed. Wait for the next round."}), 409
 
-    amount_value = round(float(amount), 2)
-    if user.balance < amount_value:
-        return jsonify({"error": "Insufficient balance."}), 400
+        active_count = Wager.query.with_for_update().filter(
+            Wager.user_id == user.id,
+            Wager.round_id == round_id,
+            Wager.status.in_(("active", "queued")),
+        ).count()
+        if active_count >= 2:
+            return jsonify({"error": "You already have two active bets this round."}), 409
 
-    # If the multiplier has started, hold the bet for the next round.
-    wager_status = "queued" if current_multiplier > 1.0 else "active"
-    user.balance = round(user.balance - amount_value, 2)
-    wager = Wager(
-        user_id=user.id,
-        round_id=round_row.id,
-        bet_amount=amount_value,
-        status=wager_status,
-    )
-    db.session.add(wager)
-    db.session.commit()
+        amount_value = round(float(amount), 2)
+        if user.balance < amount_value:
+            return jsonify({"error": "Insufficient balance."}), 400
+
+        wager_status = "queued" if current_multiplier > 1.0 else "active"
+        user.balance = round(float(user.balance) - amount_value, 2)
+        wager = Wager(
+            user_id=user.id,
+            round_id=round_row.id,
+            bet_amount=amount_value,
+            status=wager_status,
+        )
+        db.session.add(wager)
 
     return jsonify({
         "wager_id": wager.id,
@@ -650,33 +844,36 @@ def cashout_bet():
     try:
         wager_id = int(payload.get("wager_id"))
     except (TypeError, ValueError):
-        return jsonify({"error": "Invalid bet."}), 400
+        return jsonify({"error": "Invalid game round."}), 400
 
-    wager = Wager.query.filter_by(id=wager_id, user_id=user.id).first()
-    if not wager or wager.status != "active":
-        return jsonify({"error": "This bet is no longer active."}), 409
+    with db.session.begin():
+        user = User.query.with_for_update().filter_by(id=user.id).first()
+        wager = Wager.query.with_for_update().filter_by(id=wager_id, user_id=user.id).first()
+        if not wager or wager.status != "active":
+            return jsonify({"error": "This bet is no longer active."}), 409
 
-    round_row = db.session.get(GameRound, wager.round_id)
-    current_multiplier = server_round_multiplier(round_row)
-    if current_multiplier >= round_row.crash_point:
-        wager.status = "lost"
-        wager.settled_multiplier = round_row.crash_point
-        write_game_result(user, wager, "lose", round_row.crash_point)
-        db.session.commit()
-        return jsonify({
-            "status": "lost",
-            "multiplier": round_row.crash_point,
-            "balance": user.balance,
-            "error": "The plane crashed before cash-out. Your stake was lost.",
-        })
+        round_row = GameRound.query.with_for_update().filter_by(id=wager.round_id).first()
+        if not round_row:
+            return jsonify({"error": "Game round not found."}), 404
 
-    payout = round(wager.bet_amount * current_multiplier, 2)
-    user.balance = round(user.balance + payout, 2)
-    wager.status = "cashed_out"
-    wager.settled_multiplier = current_multiplier
-    wager.payout = payout
-    write_game_result(user, wager, "win", current_multiplier)
-    db.session.commit()
+        current_multiplier = server_round_multiplier(round_row)
+        if current_multiplier >= round_row.crash_point:
+            wager.status = "lost"
+            wager.settled_multiplier = round_row.crash_point
+            write_game_result(user, wager, "lose", round_row.crash_point)
+            return jsonify({
+                "status": "lost",
+                "multiplier": round_row.crash_point,
+                "balance": user.balance,
+                "error": "The plane crashed before cash-out. Your stake was lost.",
+            })
+
+        payout = round(wager.bet_amount * current_multiplier, 2)
+        user.balance = round(float(user.balance) + payout, 2)
+        wager.status = "cashed_out"
+        wager.settled_multiplier = current_multiplier
+        wager.payout = payout
+        write_game_result(user, wager, "win", current_multiplier)
 
     return jsonify({
         "status": "cashed_out",
@@ -696,19 +893,20 @@ def settle_round_bets():
     try:
         round_id = int(payload.get("round_id"))
     except (TypeError, ValueError):
-        return jsonify({"error": "Invalid game round."}), 400
+        return jsonify({"error": "Invalid bet."}), 400
 
-    round_row = db.session.get(GameRound, round_id)
-    if not round_row:
-        return jsonify({"error": "Game round not found."}), 404
+    with db.session.begin():
+        user = User.query.with_for_update().filter_by(id=user.id).first()
+        round_row = GameRound.query.with_for_update().filter_by(id=round_id).first()
+        if not round_row:
+            return jsonify({"error": "Game round not found."}), 404
 
-    wagers = Wager.query.filter_by(user_id=user.id, round_id=round_id, status="active").all()
-    for wager in wagers:
-        wager.status = "lost"
-        wager.settled_multiplier = round_row.crash_point
-        write_game_result(user, wager, "lose", round_row.crash_point)
+        wagers = Wager.query.with_for_update().filter_by(user_id=user.id, round_id=round_id, status="active").all()
+        for wager in wagers:
+            wager.status = "lost"
+            wager.settled_multiplier = round_row.crash_point
+            write_game_result(user, wager, "lose", round_row.crash_point)
 
-    db.session.commit()
     return jsonify({"balance": user.balance, "lost_count": len(wagers)})
 
 
@@ -725,6 +923,43 @@ def admin():
     )
 
 
+@app.route("/admin/register", methods=["POST"])
+@admin_required
+def register_admin():
+    """Create an allowlisted admin account from an authenticated admin session."""
+    if not request.is_json:
+        return jsonify({"error": "Send the registration details as JSON."}), 415
+    payload = request.get_json(silent=True) or {}
+    username = (payload.get("username") or "").strip()
+    email = (payload.get("email") or "").strip()
+    phone = normalize_phone_number(payload.get("phone"))
+    password = payload.get("password") or ""
+
+    if not username or not email or not phone or not password:
+        return jsonify({"error": "Username, email, valid phone number, and password are required."}), 400
+    if not isinstance(password, str) or not 6 <= len(password) <= 8:
+        return jsonify({"error": "Use a password between 6 and 8 characters."}), 400
+    if phone not in configured_admin_phones():
+        return jsonify({"error": "This phone number is not enabled for admin access in project configuration."}), 403
+    if User.query.filter(
+        (User.username == username)
+        | (User.email == email)
+        | (User.phone == phone)
+    ).first():
+        return jsonify({"error": "That phone number, username, or email is already registered."}), 409
+
+    user = User(
+        username=username,
+        email=email,
+        phone=phone,
+        password_hash=generate_password_hash(password),
+        balance=0.0,
+    )
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({"message": "Admin account created. You can now log in."}), 201
+
+
 # =========================================================
 # ADMIN DATA
 # =========================================================
@@ -734,10 +969,130 @@ def admin():
 def admin_data():
 
     state = get_or_create_state()
+    latest_round = GameRound.query.order_by(GameRound.id.desc()).first()
 
     return jsonify({
-        "next_crash": state.next_crash
+        "next_crash": state.next_crash,
+        "round_id": latest_round.id if latest_round else 0,
+        "updated_at": datetime.utcnow().isoformat() + "Z",
     })
+
+
+@app.route("/admin/diagnostics")
+@admin_required
+def admin_diagnostics():
+    """Return safe deployment diagnostics without secrets or stack traces."""
+    checks = []
+
+    def check(severity, title, detail, action=""):
+        checks.append({"severity": severity, "title": title, "detail": detail, "action": action})
+
+    if IS_PRODUCTION:
+        check("ok", "Production mode", "APP_ENV is production.")
+    else:
+        check("error", "Production mode is off", "The app is running with development settings.",
+              "Set APP_ENV=production in the hosting environment and configure a strong SECRET_KEY.")
+
+    if secret_key and len(secret_key) >= 32:
+        check("ok", "Session secret", "A secret key of sufficient length is configured.")
+    else:
+        check("error", "Session secret is missing or weak", "Sessions may reset between restarts or be guessable.",
+              "Set SECRET_KEY to a random value of at least 32 characters in the host's secret settings.")
+
+    if app.config["DEBUG"]:
+        check("error", "Debug mode is enabled", "Debug mode must not be exposed to internet users.",
+              "Set FLASK_DEBUG=0 or remove it from the production environment.")
+    else:
+        check("ok", "Debug mode", "Flask debug mode is off.")
+
+    if app.config["SESSION_COOKIE_SECURE"]:
+        check("ok", "Secure session cookies", "Session cookies are restricted to HTTPS.")
+    else:
+        check("warning", "Secure session cookies are off", "Expected for local HTTP development only.",
+              "Use APP_ENV=production behind HTTPS to enable Secure cookies.")
+
+    if configured_admin_phones():
+        check("ok", "Admin allowlist", "At least one admin phone number is configured.")
+    else:
+        check("error", "No admin phone configured", "No account can pass the admin access check.",
+              "Set ADMIN_PHONE or comma-separated ADMIN_PHONES in the host environment.")
+
+    try:
+        with db.engine.connect() as connection:
+            connection.exec_driver_sql("SELECT 1")
+        check("ok", "Database connection", "The configured MySQL database responded successfully.")
+    except Exception as exc:
+        check("error", "Database connection failed", f"Database check failed ({type(exc).__name__}).",
+              "Check DATABASE_URL or MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASSWORD, and MYSQL_DB; ensure MySQL is reachable.")
+
+    if shutil.which("g++"):
+        check("ok", "C++ command compiler", "g++ is available for the admin command panel.")
+    else:
+        check("error", "C++ command compiler missing", "The C++ admin command panel cannot compile admin_commands.cpp.",
+              "Install g++ on the host or remove/disable the C++ command panel for that deployment.")
+
+    database_url = make_url(str(app.config["SQLALCHEMY_DATABASE_URI"]))
+    if database_url.username == "root":
+        check("warning", "Database uses the root account", "The application database connection has full database privileges.",
+              "Create a dedicated MySQL user with only the privileges this app needs; avoid root for the hosted app.")
+    else:
+        check("ok", "Database account", "A non-root database account is configured.")
+
+    check("warning", "Automatic schema setup", "Startup creates tables and may add the user phone column.",
+          "For production upgrades, use reviewed database migrations and back up the database before schema changes.")
+    if IS_PRODUCTION:
+        check("ok", "Test deposit endpoint", "The simulated deposit endpoint is disabled in production.")
+    else:
+        check("warning", "Test deposit endpoint enabled", "Development mode allows simulated balance credits.",
+              "Set APP_ENV=production before hosting; the route rejects requests in production.")
+    check("warning", "Runtime exception history", "This panel checks current configuration and service health; it does not store past application exceptions.",
+          "Use the hosting provider's protected application logs for runtime tracebacks and operational alerts.")
+    return jsonify({"checks": checks, "error_count": sum(item["severity"] == "error" for item in checks),
+                    "warning_count": sum(item["severity"] == "warning" for item in checks)})
+
+
+def run_admin_cpp_command(command):
+    source_path = os.path.join(os.path.dirname(__file__), "admin_commands.cpp")
+    build_dir = os.path.join(os.path.dirname(__file__), "instance")
+    executable_path = os.path.join(build_dir, "admin_commands")
+    os.makedirs(build_dir, exist_ok=True)
+
+    if not os.path.isfile(executable_path) or os.path.getmtime(source_path) > os.path.getmtime(executable_path):
+        build = subprocess.run(
+            ["g++", "-std=c++17", "-O2", source_path, "-o", executable_path],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        if build.returncode:
+            raise RuntimeError(build.stderr.strip() or "Could not compile admin_commands.cpp.")
+
+    result = subprocess.run(
+        [executable_path, command],
+        capture_output=True,
+        text=True,
+        timeout=5,
+        check=False,
+    )
+    return result.returncode, (result.stdout or result.stderr).strip()
+
+
+@app.route("/admin/commands", methods=["GET", "POST"])
+@admin_required
+def admin_commands():
+    try:
+        if request.method == "GET":
+            code, output = run_admin_cpp_command("help")
+        else:
+            payload = request.get_json(silent=True) or {}
+            command = (payload.get("command") or "").strip()
+            if not re.fullmatch(r"[a-z][a-z0-9-]{0,39}", command):
+                return jsonify({"error": "Use a command name made of lowercase letters, numbers, and hyphens."}), 400
+            code, output = run_admin_cpp_command(command)
+    except (OSError, subprocess.SubprocessError, RuntimeError) as exc:
+        return jsonify({"error": str(exc)}), 500
+    return jsonify({"output": output, "ok": code == 0}), (200 if code == 0 else 400)
 
 
 # =========================================================
@@ -782,6 +1137,9 @@ def register():
                     "are required. Enter a valid phone number."
                 )
             }), 400
+
+        if not isinstance(password, str) or not 6 <= len(password) <= 8:
+            return jsonify({"error": "Use a password between 6 and 8 characters."}), 400
 
         existing_user = User.query.filter(
             (User.username == username)
@@ -881,9 +1239,7 @@ def login_page():
                 )
             }), 400
 
-        user = User.query.filter_by(
-            phone=phone
-        ).first()
+        user = User.query.filter_by(phone=phone).with_for_update().first()
 
         if (
             not user
@@ -899,9 +1255,38 @@ def login_page():
                 )
             }), 401
 
-        session.clear()
-        session["user_id"] = user.id
-        session["username"] = user.username
+        now = datetime.utcnow()
+        tab_logins = TabLogin.query.filter_by(user_id=user.id).all()
+        has_recent_login = any(
+            tab_login.expires_at > now
+            and tab_login.last_seen_at is not None
+            and tab_login.last_seen_at > now - timedelta(minutes=5)
+            for tab_login in tab_logins
+        )
+        if has_recent_login:
+            db.session.rollback()
+            return jsonify({
+                "error": "This account is already logged in. Log out of that account before signing in again."
+            }), 409
+
+        TabLogin.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+        active_login = db.session.get(ActiveLogin, user.id)
+        if active_login:
+            db.session.delete(active_login)
+
+        token = secrets.token_urlsafe(32)
+        db.session.add(ActiveLogin(user_id=user.id, token=token))
+        tab_token = secrets.token_urlsafe(32)
+        db.session.query(TabLogin).filter(
+            TabLogin.expires_at <= now
+        ).delete(synchronize_session=False)
+        db.session.add(TabLogin(
+            token_hash=hashlib.sha256(tab_token.encode("utf-8")).hexdigest(),
+            user_id=user.id,
+            expires_at=datetime.utcnow() + timedelta(days=30),
+            last_seen_at=now,
+        ))
+        db.session.commit()
 
         if request.is_json:
 
@@ -910,6 +1295,8 @@ def login_page():
                 "message": "login successful",
 
                 "logged_in": True,
+                "tab_token": tab_token,
+                "is_admin": user.phone in configured_admin_phones(),
 
                 "user": {
                     "id": user.id,
@@ -921,13 +1308,12 @@ def login_page():
 
             })
 
-        return redirect(
-            url_for("index")
-        )
+        return redirect(url_for("index", tab_token=tab_token))
 
-    return render_template(
-        "login.html"
-    )
+    user = current_user()
+    session_ended = request.args.get("session_ended") == "1" or session.pop("session_ended", False)
+    is_admin = bool(user and user.phone in configured_admin_phones())
+    return render_template("login.html", is_admin=is_admin, session_ended=session_ended)
 
 
 # =========================================================
@@ -940,15 +1326,24 @@ def login_page():
 )
 def logout():
 
-    session.pop(
-        "user_id",
-        None
-    )
+    tab_token = request.headers.get("X-Tab-Token") or request.args.get("tab_token")
+    if tab_token:
+        token_hash = hashlib.sha256(tab_token.encode("utf-8")).hexdigest()
+        tab_login = db.session.get(TabLogin, token_hash)
+        if tab_login:
+            active_login = db.session.get(ActiveLogin, tab_login.user_id)
+            if active_login:
+                db.session.delete(active_login)
+            db.session.delete(tab_login)
 
-    session.pop(
-        "username",
-        None
-    )
+    user_id = session.get("user_id")
+    token = session.get("active_login_token")
+    if not tab_token:
+        active_login = db.session.get(ActiveLogin, user_id)
+        if active_login and active_login.token == token:
+            db.session.delete(active_login)
+        session.clear()
+    db.session.commit()
 
     if request.method == "POST":
 
@@ -968,19 +1363,7 @@ def logout():
 @app.route("/me")
 def me():
 
-    user_id = session.get("user_id")
-
-    if not user_id:
-
-        return jsonify({
-            "logged_in": False
-        }), 401
-
-    user = db.session.get(
-        User,
-        user_id
-    )
-
+    user = current_user()
     if not user:
 
         return jsonify({
@@ -1013,8 +1396,7 @@ def mpesa_test_deposit():
     if IS_PRODUCTION and not app.testing:
         return jsonify({"error": "M-Pesa test deposits are disabled."}), 403
 
-    user_id = session.get("user_id")
-    user = db.session.get(User, user_id) if user_id else None
+    user = current_user()
     if not user:
         return jsonify({"error": "Log in before depositing."}), 401
 
