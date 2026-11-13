@@ -438,14 +438,15 @@ function addRandomWinner() {
 
 window.addEventListener(
     "aviatorRoundStarted",
-    function () {
+    function (event) {
 
         clearTimeout(winnerTimer);
         winnerTimer = null;
 
         liveRoundActive = true;
 
-        window.currentAviatorMultiplier = 1;
+        const startedMultiplier = Number(event.detail?.multiplier) || 1;
+        window.currentAviatorMultiplier = startedMultiplier;
 
         /*
            Start simulated cash-outs

@@ -12,11 +12,43 @@
         <input type="tel" id="phone" placeholder="Phone number" autocomplete="tel" required>
         <input type="password" id="password" placeholder="Password" required>
         <button type="submit">Login</button>
+        {% if is_admin %}
+        <p><button type="button" id="adminPortalOpen" class="secondary-button">Try to log in to admin portal</button></p>
+        {% endif %}
         <p>Don't have an account? <a href="/register">Register</a></p>
-        <div id="message" class="message"></div>
+        <div id="message" class="message">{% if session_ended %}Your session has ended because this account signed in on another browser.{% endif %}</div>
     </form>
 
+    {% if is_admin %}
+    <div id="adminPortalOverlay" class="admin-overlay" hidden>
+        <form id="adminPortalForm" class="admin-card">
+            <button type="button" id="adminPortalClose" class="close-button" aria-label="Close">×</button>
+            <h2>Admin account setup</h2>
+            <p>Create another admin account. Its phone number must already be in the server's admin allowlist.</p>
+            <input type="text" id="adminUsername" placeholder="Username" autocomplete="username" required>
+            <input type="email" id="adminEmail" placeholder="Email" autocomplete="email" required>
+            <input type="tel" id="adminPhone" placeholder="Allowlisted admin phone" autocomplete="tel" required>
+            <input type="password" id="adminPassword" placeholder="Password (6–8 characters)" autocomplete="new-password" minlength="6" maxlength="8" required>
+            <button type="submit">Create admin account</button>
+            <div id="adminPortalMessage" class="message" role="status" aria-live="polite"></div>
+        </form>
+    </div>
+    <style>
+        .secondary-button { background: #333; margin: 0; }
+        .admin-overlay { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 18px; background: #000b; }
+        .admin-overlay[hidden] { display: none; }
+        .admin-card { position: relative; width: min(420px, 100%); margin: 0; box-sizing: border-box; }
+        .admin-card p { color: #bbb; line-height: 1.45; }
+        .admin-card input { display: block; width: 100%; box-sizing: border-box; margin: 10px 0; padding: 12px; }
+        .close-button { position: absolute; top: 8px; right: 10px; width: auto; padding: 4px 10px; background: transparent; color: white; font-size: 24px; }
+    </style>
+    {% endif %}
+
     <script>
+        if ({{ session_ended|tojson }}) {
+            const endedMessage = document.getElementById('message');
+            endedMessage.style.color = '#ffcccc';
+        }
         document.getElementById('loginForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
@@ -39,15 +71,49 @@
                 } else {
                     msg.textContent = 'Login successful! Redirecting...';
                     msg.style.color = '#aaffaa';
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 700);
+                    const destination = data.is_admin ? '/admin' : '/';
+                    const nextUrl = new URL(destination, window.location.origin);
+                    if (data.tab_token) {
+                        nextUrl.searchParams.set('tab_token', data.tab_token);
+                    }
+                    setTimeout(() => { window.location.href = nextUrl.href; }, 700);
                 }
             })
             .catch(err => {
                 document.getElementById('message').textContent = 'Request failed';
             });
         });
+
+        {% if is_admin %}
+        const adminOverlay = document.getElementById('adminPortalOverlay');
+        document.getElementById('adminPortalOpen').addEventListener('click', () => { adminOverlay.hidden = false; });
+        document.getElementById('adminPortalClose').addEventListener('click', () => { adminOverlay.hidden = true; });
+        adminOverlay.addEventListener('click', (event) => { if (event.target === adminOverlay) adminOverlay.hidden = true; });
+        document.getElementById('adminPortalForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const msg = document.getElementById('adminPortalMessage');
+            const payload = {
+                username: document.getElementById('adminUsername').value,
+                email: document.getElementById('adminEmail').value,
+                phone: document.getElementById('adminPhone').value,
+                password: document.getElementById('adminPassword').value
+            };
+            try {
+                const response = await fetch('/admin/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                msg.textContent = data.error || data.message;
+                msg.style.color = response.ok ? '#aaffaa' : '#ffcccc';
+                if (response.ok) event.target.reset();
+            } catch (error) {
+                msg.textContent = 'Request failed. Try again.';
+                msg.style.color = '#ffcccc';
+            }
+        });
+        {% endif %}
     </script>
 </body>
 </html>

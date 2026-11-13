@@ -5,6 +5,8 @@ let interval = null;
 let flightTick = 0;
 let countdownTimer = null;
 let currentRoundId = null;
+let serverSyncTimer = null;
+let serverRoundStartedAt = null;
 window.currentAviatorRoundId = null;
 
 
@@ -219,10 +221,111 @@ function addRoundHistory(value) {
    START ROUND
 ========================================= */
 
-function startRound() {
-    clearInterval(interval);
+function refreshRoundHistory() {
+    fetch("/api/round-history", { cache: "no-store" })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Unable to load round history");
+            }
+            return res.json();
+        })
+        .then(data => {
+            const historyList = document.getElementById("historyList");
+            if (!historyList || !Array.isArray(data.history)) {
+                return;
+            }
 
+            historyList.innerHTML = "";
+            data.history.slice(0, 50).forEach(value => {
+                const item = document.createElement("div");
+                item.classList.add("history-item");
+                if (value < 2) {
+                    item.classList.add("history-blue");
+                } else if (value < 10) {
+                    item.classList.add("history-purple");
+                } else {
+                    item.classList.add("history-pink");
+                }
+                item.innerText = Number(value).toFixed(2) + "x";
+                historyList.appendChild(item);
+            });
+        })
+        .catch(() => {
+            // Keep the history list as-is if the API is temporarily unavailable.
+        });
+}
+
+function applyServerMultiplier(value) {
+    const nextMultiplier = Number(value) || 1;
+    multiplier = Math.max(nextMultiplier, 1);
+    window.currentAviatorMultiplier = multiplier;
+    if (multiplierDisplay) {
+        multiplierDisplay.innerText = multiplier.toFixed(2) + "x";
+    }
+    window.dispatchEvent(new CustomEvent("aviatorMultiplier", {
+        detail: { multiplier }
+    }));
+}
+
+function currentServerMultiplier() {
+    if (!serverRoundStartedAt) {
+        return Number(window.currentAviatorMultiplier) || 1;
+    }
+
+    const elapsedSeconds = Math.max(0, (Date.now() - serverRoundStartedAt) / 1000);
+    return Math.max(1, (1 + elapsedSeconds * 0.25));
+}
+
+function syncCurrentRound() {
+    if (!currentRoundId) {
+        return;
+    }
+
+    fetch(`/api/round/${currentRoundId}`, { cache: "no-store" })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Unable to fetch current round state");
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (!data) {
+                return;
+            }
+
+            if (data.started_at) {
+                serverRoundStartedAt = Date.parse(data.started_at);
+            }
+
+            if (data.crashed === true || Number(data.crashed) === 1) {
+                applyServerMultiplier(data.multiplier);
+                clearInterval(serverSyncTimer);
+                serverSyncTimer = null;
+                return;
+            }
+
+            const sharedMultiplier = currentServerMultiplier();
+            window.currentAviatorMultiplier = sharedMultiplier;
+            multiplier = sharedMultiplier;
+            if (multiplierDisplay) {
+                multiplierDisplay.innerText = multiplier.toFixed(2) + "x";
+            }
+            window.dispatchEvent(new CustomEvent("aviatorMultiplier", {
+                detail: { multiplier }
+            }));
+        })
+        .catch(() => {
+            // The server round stays authoritative; retry on the next poll.
+        });
+}
+
+function startRound() {
+    refreshRoundHistory();
+
+    clearInterval(interval);
+    clearInterval(serverSyncTimer);
     interval = null;
+    serverSyncTimer = null;
 
     if (countdownTimer) {
         clearTimeout(countdownTimer);
@@ -240,12 +343,19 @@ function startRound() {
         .then(data => {
             currentRoundId = data.round_id;
             window.currentAviatorRoundId = currentRoundId;
-            startFlight(data.crash, currentRoundId);
+            if (data.started_at) {
+                serverRoundStartedAt = Date.parse(data.started_at);
+            } else {
+                serverRoundStartedAt = Date.now();
+            }
+            const startingMultiplier = Number(data.multiplier) || 1;
+            startFlight(data.crash, currentRoundId, startingMultiplier);
+            serverSyncTimer = setInterval(syncCurrentRound, 150);
         })
         .catch(() => {
             currentRoundId = null;
             window.currentAviatorRoundId = null;
-            startFlight(generateLocalCrash(), null);
+            startFlight(generateLocalCrash(), null, 1);
         });
 }
 
@@ -275,16 +385,17 @@ function generateLocalCrash() {
    START FLIGHT
 ========================================= */
 
-function startFlight(crash, roundId = null) {
+function startFlight(crash, roundId = null, startingMultiplier = 1) {
     clearInterval(interval);
     interval = null;
 
     crashPoint = Math.max(Number(crash) || 2, 2);
+    currentRoundId = roundId || currentRoundId;
 
-    multiplier = 1;
+    multiplier = Math.max(Number(startingMultiplier) || 1, 1);
     flightTick = 0;
 
-    // Reset the shared multiplier for betlist.js.
+    // Keep the shared multiplier synchronized with the server's active round.
     window.currentAviatorMultiplier = multiplier;
 
     if (roundResult) roundResult.hidden = true;
@@ -292,7 +403,7 @@ function startFlight(crash, roundId = null) {
     setLoadingVisible(false);
 
     multiplierDisplay.style.display = "block";
-    multiplierDisplay.innerText = "1.00x";
+    multiplierDisplay.innerText = multiplier.toFixed(2) + "x";
 
     plane.style.display = "block";
     canvas.style.display = "block";
@@ -312,7 +423,7 @@ function startFlight(crash, roundId = null) {
 
     window.dispatchEvent(
         new CustomEvent("aviatorRoundStarted", {
-            detail: { roundId }
+            detail: { roundId, multiplier }
         })
     );
 
@@ -371,7 +482,11 @@ function showCrashResult(crash) {
 function updateGame() {
     flightTick++;
 
-    multiplier += 0.01;
+    if (currentRoundId && serverRoundStartedAt) {
+        multiplier = currentServerMultiplier();
+    } else {
+        multiplier += 0.01;
+    }
 
     /*
        SHARE THE EXACT CURRENT MULTIPLIER

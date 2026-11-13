@@ -193,7 +193,7 @@
 
     window.addEventListener("aviatorRoundStarted", event => {
         currentRoundId = event.detail?.roundId || null;
-        currentMultiplier = 1;
+        currentMultiplier = Number(event.detail?.multiplier) || currentMultiplier || 1;
 
         cards.forEach(card => {
             const state = states.get(card);

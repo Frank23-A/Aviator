@@ -135,7 +135,9 @@
     </main>
 
     {% include 'footer.html' %}
+    <script src="{{ url_for('static', filename='js/session-guard.js', v='tab-login-v2') }}"></script>
     <script src="{{ url_for('static', filename='js/header.js') }}"></script>
     <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/logout.js', v='tab-logout-v2') }}"></script>
 </body>
 </html>

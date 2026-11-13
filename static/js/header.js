@@ -320,7 +320,7 @@ function returnToAviator() {
         overlay.setAttribute("aria-hidden", "true");
     }
     document.body.style.overflow = "";
-    window.location.assign("/aviator");
+    window.location.assign(window.tabAuthenticatedUrl ? window.tabAuthenticatedUrl("/aviator") : "/aviator");
 }
 
 function returnAfterDeposit() {
@@ -330,7 +330,8 @@ function returnAfterDeposit() {
         overlay.setAttribute("aria-hidden", "true");
     }
     document.body.style.overflow = "";
-    window.location.assign(document.body.dataset.depositReturn || "/aviator");
+    const destination = document.body.dataset.depositReturn || "/aviator";
+    window.location.assign(window.tabAuthenticatedUrl ? window.tabAuthenticatedUrl(destination) : destination);
 }
 
 
